@@ -26,11 +26,25 @@ typedef struct _xQNodeList {
 
 xQNodeList* xQNodeList_alloc_init(unsigned long size);
 xQStatusCode xQNodeList_init(xQNodeList* list, unsigned long size);
-xQStatusCode xQNodeList_free(xQNodeList* list);
+xQStatusCode xQNodeList_free(xQNodeList* list, int freeList);
 xQStatusCode xQNodeList_insert(xQNodeList* list, xmlNodePtr node, unsigned long atIdx);
 xQStatusCode xQNodeList_remove(xQNodeList* list, unsigned long fromIdx, unsigned long count);
 #define xQNodeList_push(list, node) (xQNodeList_insert(list, node, list->size))
 
+
+
+typedef struct _xQ {
+  xmlDocPtr document;
+  xQNodeList context;
+} xQ;
+
+xQ* xQ_alloc_init();
+xQ* xQ_alloc_initDoc(xmlDocPtr doc);
+xQ* xQ_alloc_initFile(const char* filename);
+xQ* xQ_alloc_initMemory(const char* buffer, int size);
+xQStatusCode xQ_init(xQ* self);
+xQStatusCode xQ_free(xQ* self, int freeXQ);
+xQStatusCode xQ_find(xQ* self, const char* selector);
 
 #ifdef __cplusplus
 }

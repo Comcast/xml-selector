@@ -59,10 +59,11 @@ xQStatusCode xQNodeList_init(xQNodeList* list, unsigned long size) {
  *
  * Returns a 0 (XQ_OK) on success, an error code otherwise
  */
-xQStatusCode xQNodeList_free(xQNodeList* list) {
+xQStatusCode xQNodeList_free(xQNodeList* list, int freeList) {
   if (list && list->list)
     free(list->list);
-  free(list);
+  if (freeList)
+    free(list);
   
   return XQ_OK;
 }
