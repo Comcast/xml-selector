@@ -29,6 +29,7 @@ xQStatusCode xQNodeList_init(xQNodeList* list, unsigned long size);
 xQStatusCode xQNodeList_free(xQNodeList* list, int freeList);
 xQStatusCode xQNodeList_insert(xQNodeList* list, xmlNodePtr node, unsigned long atIdx);
 xQStatusCode xQNodeList_remove(xQNodeList* list, unsigned long fromIdx, unsigned long count);
+xQStatusCode xQNodeList_assign(xQNodeList* toList, xQNodeList* fromList);
 #define xQNodeList_push(list, node) (xQNodeList_insert(list, node, list->size))
 
 
@@ -44,7 +45,27 @@ xQ* xQ_alloc_initFile(const char* filename);
 xQ* xQ_alloc_initMemory(const char* buffer, int size);
 xQStatusCode xQ_init(xQ* self);
 xQStatusCode xQ_free(xQ* self, int freeXQ);
-xQStatusCode xQ_find(xQ* self, const char* selector);
+xQStatusCode xQ_find(xQ* self, const xmlChar* selector);
+unsigned long xQ_length(xQ* self);
+xmlChar* xQ_getText(xQ* self);
+
+
+
+typedef xQStatusCode (*xQSearchOp)(xQ* context, const xmlChar** args, xmlNodePtr node, xQNodeList* outList);
+typedef struct _xQSearchExpr xQSearchExpr;
+struct _xQSearchExpr {
+  unsigned int argc;
+  xmlChar** argv;
+  xQSearchOp operation;
+  xQSearchExpr* next;
+};
+
+xQSearchExpr* xQSearchExpr_alloc_init(const xmlChar* expr);
+xQStatusCode xQSearchExpr_free(xQSearchExpr* self);
+xQStatusCode xQSearchExpr_eval(xQSearchExpr* self, xQ* context, xmlNodePtr node, xQNodeList* outList);
+
+xQStatusCode _xQ_findDescendantsByName(xQ* context, const xmlChar** args, xmlNodePtr node, xQNodeList* outList);
+xQStatusCode _xQ_addToOutput(xQ* context, const xmlChar** args, xmlNodePtr node, xQNodeList* outList);
 
 #ifdef __cplusplus
 }

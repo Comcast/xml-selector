@@ -142,3 +142,22 @@ xQStatusCode xQNodeList_remove(xQNodeList* list, unsigned long fromIdx, unsigned
   
   return XQ_OK;
 }
+
+/**
+ * Assign the contents of another list to this list
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
+ */
+xQStatusCode xQNodeList_assign(xQNodeList* toList, xQNodeList* fromList) {
+  xQStatusCode result = XQ_OK;
+  
+  if (toList->capacity < fromList->size)
+    result = xQNodeList_grow(toList, fromList->size);
+  
+  if (result == XQ_OK) {
+    memmove(toList->list, fromList->list, sizeof(xmlNodePtr) * fromList->size);
+    toList->size = fromList->size;
+  }
+  
+  return result;
+}
