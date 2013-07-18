@@ -49,7 +49,7 @@ xQ* xQ_alloc_initDoc(xmlDocPtr doc) {
   ok = ( self->document = xmlCopyDoc(doc, 1) ) != 0;
   
   if (ok)
-    ok = ( node = xmlDocGetRootElement(self->document) ) != 0;
+    node = (xmlNodePtr) self->document;
   
   if (ok)
     ok = (xmlNodeList_push(&(self->context), node) == XQ_OK);
@@ -80,7 +80,7 @@ xQ* xQ_alloc_initFile(const char* filename) {
   ok = ( self->document = xmlParseFile(filename) ) != 0;
   
   if (ok)
-    ok = ( node = xmlDocGetRootElement(self->document) ) != 0;
+    node = (xmlNodePtr) self->document;
   
   if (ok)
     ok = (xmlNodeList_push(&(self->context), node) == XQ_OK);
@@ -111,7 +111,7 @@ xQ* xQ_alloc_initMemory(const char* buffer, int size) {
   ok = ( self->document = xmlParseMemory(buffer, size) ) != 0;
   
   if (ok)
-    ok = ( node = xmlDocGetRootElement(self->document) ) != 0;
+    node = (xmlNodePtr) self->document;
   
   if (ok)
     ok = (xmlNodeList_push(&(self->context), node) == XQ_OK);
