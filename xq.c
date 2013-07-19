@@ -240,6 +240,8 @@ xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result) {
 
   if (!*result)
     retcode = XQ_OUT_OF_MEMORY;
+  else
+    xQ_clear(*result);
   
   for (i = 0; retcode == XQ_OK && i < self->context.size; i++)
     retcode = xQSearchExpr_eval(expr, self, self->context.list[i], &((*result)->context));
@@ -252,4 +254,13 @@ xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result) {
   xQSearchExpr_free(expr);
 
   return retcode;
+}
+
+/**
+ * Clear the context of the the xQ object.
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
+ */
+xQStatusCode xQ_clear(xQ* self) {
+  return xQNodeList_clear(&(self->context));
 }

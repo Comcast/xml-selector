@@ -31,6 +31,7 @@ xQStatusCode xQNodeList_insert(xQNodeList* list, xmlNodePtr node, unsigned long 
 xQStatusCode xQNodeList_remove(xQNodeList* list, unsigned long fromIdx, unsigned long count);
 xQStatusCode xQNodeList_assign(xQNodeList* toList, xQNodeList* fromList);
 #define xQNodeList_push(list, node) (xQNodeList_insert(list, node, (list)->size))
+#define xQNodeList_clear(list) ((list)->size = 0)
 
 
 
@@ -46,6 +47,7 @@ xQ* xQ_alloc_initMemory(const char* buffer, int size);
 xQStatusCode xQ_init(xQ* self);
 xQStatusCode xQ_free(xQ* self, int freeXQ);
 xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result);
+xQStatusCode xQ_clear(xQ* self);
 unsigned long xQ_length(xQ* self);
 xmlChar* xQ_getText(xQ* self);
 
