@@ -172,33 +172,37 @@ xmlChar* xQ_getText(xQ* self) {
 }
 
 /**
- * Search the current context for selector and set the context to the
- * result.
+ * Search the current context for selector and return the result as a new
+ * xQ object. The result parameter is assigned the newly allocated xQ
+ * object and the caller is responsible for freeing it. On failure, the
+ * result parameter is set to null.
  *
  * Returns a 0 (XQ_OK) on success, an error code otherwise
  */
-xQStatusCode xQ_find(xQ* self, const xmlChar* selector) {
-  xQStatusCode result = XQ_OK;
+xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result) {
+  xQStatusCode retcode = XQ_OK;
   xQSearchExpr* expr;
-  xQNodeList tmpList;
   unsigned int i;
   
-  if (!self->context.size)
-    return result;
+  *result = 0;
   
   expr = xQSearchExpr_alloc_init(selector);
   if (!expr)
     return XQ_OUT_OF_MEMORY;
   
-  xQNodeList_init(&tmpList, 8);
+  *result = xQ_alloc_initDoc(self->document);
+  if (!*result)
+    retcode = XQ_OUT_OF_MEMORY;
   
-  for (i = 0; result == XQ_OK && i < self->context.size; i++)
-    result = xQSearchExpr_eval(expr, self, self->context.list[i], &tmpList);
+  for (i = 0; retcode == XQ_OK && i < self->context.size; i++)
+    retcode = xQSearchExpr_eval(expr, self, self->context.list[i], &((*result)->context));
   
-  if (result == XQ_OK)
-    result = xQNodeList_assign(&(self->context), &tmpList);
+  if (retcode != XQ_OK) {
+    *result = 0;
+    xQ_free(*result, 1);
+  }
   
-  xQNodeList_free(&tmpList, 0);
+  xQSearchExpr_free(expr);
 
-  return result;
+  return retcode;
 }

@@ -45,7 +45,7 @@ xQ* xQ_alloc_initFile(const char* filename);
 xQ* xQ_alloc_initMemory(const char* buffer, int size);
 xQStatusCode xQ_init(xQ* self);
 xQStatusCode xQ_free(xQ* self, int freeXQ);
-xQStatusCode xQ_find(xQ* self, const xmlChar* selector);
+xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result);
 unsigned long xQ_length(xQ* self);
 xmlChar* xQ_getText(xQ* self);
 
