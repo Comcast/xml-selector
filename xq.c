@@ -264,3 +264,18 @@ xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result) {
 xQStatusCode xQ_clear(xQ* self) {
   return xQNodeList_clear(&(self->context));
 }
+
+/**
+ * Return the value of the named attribute from the first item in an xQ's
+ * collection.
+ *
+ * Returns a pointer to the string copy on success, or 0 on failure or in
+ * the event of no such attribute. The caller is responsible for freeing
+ * any returned string by calling xmlFree().
+ */
+xmlChar* xQ_getAttr(xQ* self, const char* name) {
+  if ( (!self->context.size) || (!self->context.list[0]) )
+    return 0;
+  
+  return xmlGetProp(self->context.list[0], name);
+}

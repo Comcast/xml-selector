@@ -50,6 +50,7 @@ xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result);
 xQStatusCode xQ_clear(xQ* self);
 unsigned long xQ_length(xQ* self);
 xmlChar* xQ_getText(xQ* self);
+xmlChar* xQ_getAttr(xQ* self, const char* name);
 
 
 
