@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// local (private) routines
+static xmlChar* xQ_textOfDescendants(xmlDocPtr doc, xmlNodePtr node, int inLine);
+
 
 /**
  * Allocate and initialize a new empty xQ
@@ -168,7 +171,47 @@ xmlChar* xQ_getText(xQ* self) {
   if ( (!self->context.size) || (!self->context.list[0]) || (!self->context.list[0]->children) )
     return xmlCharStrdup("");
   
-  return xmlNodeListGetString(self->document, self->context.list[0]->children, 1);
+  return xQ_textOfDescendants(self->document, self->context.list[0]->children, 1);
+}
+
+/**
+ * Like xmlNodeListGetString, but captures text of all descendants as
+ * well, stripping out element nodes.
+ *
+ * Due to the reliance on xmlNodeListGetString, this doesn't work exactly
+ * as I would like. Calling this function on a fragment like
+ * "<p>The <i>quick</i> brown...</p>" will return "The  brown..." instead
+ * of "The quick brown...", but it's sufficient for the most common use
+ * case at the moment.
+ *
+ * Returns a pointer to the string copy on success, or 0 on failure. The
+ * caller is responsible for freeing any returned string by calling
+ * xmlFree().
+ */
+static xmlChar* xQ_textOfDescendants(xmlDocPtr doc, xmlNodePtr node, int inLine) {
+  xmlChar* ret = 0;
+  xmlChar* tmp = 0;
+  
+  if (!node)
+    return ret;
+  
+  // types handled by xmlNodeListGetString
+  if (node->type == XML_TEXT_NODE || node->type == XML_CDATA_SECTION_NODE || node->type == XML_ENTITY_REF_NODE) {
+
+    tmp = xmlNodeListGetString(doc, node, inLine);
+    ret = xmlStrcat(ret, tmp);
+    if (tmp) xmlFree(tmp);
+
+  // types not handled by xmlNodeListGetString; display their children if the have any
+  } else if (node->children) {
+
+    tmp = xQ_textOfDescendants(doc, node->children, inLine);
+    ret = xmlStrcat(ret, tmp);
+    if (tmp) xmlFree(tmp);
+
+  }
+  
+  return ret;
 }
 
 /**
@@ -190,7 +233,11 @@ xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result) {
   if (!expr)
     return XQ_OUT_OF_MEMORY;
   
-  *result = xQ_alloc_initDoc(self->document);
+  if (self->document)
+    *result = xQ_alloc_initDoc(self->document);
+  else
+    *result = xQ_alloc_init();
+
   if (!*result)
     retcode = XQ_OUT_OF_MEMORY;
   
