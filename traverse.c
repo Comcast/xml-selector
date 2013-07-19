@@ -12,7 +12,7 @@
  *
  * Returns a 0 (XQ_OK) on success, an error code otherwise
  */
-xQStatusCode _xQ_findDescendantsByName(xQ* context, const xmlChar** args, xmlNodePtr node, xQNodeList* outList) {
+xQStatusCode _xQ_findDescendantsByName(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList) {
   const xmlChar* name = args[0];
   xQStatusCode result = XQ_OK;
   xmlNodePtr cur = node ? node->children : node;
@@ -38,6 +38,6 @@ xQStatusCode _xQ_findDescendantsByName(xQ* context, const xmlChar** args, xmlNod
  *
  * Returns a 0 (XQ_OK) on success, an error code otherwise
  */
-xQStatusCode _xQ_addToOutput(xQ* context, const xmlChar** args, xmlNodePtr node, xQNodeList* outList) {
+xQStatusCode _xQ_addToOutput(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList) {
   return xQNodeList_push(outList, node);
 }

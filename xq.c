@@ -52,7 +52,7 @@ xQ* xQ_alloc_initDoc(xmlDocPtr doc) {
     node = (xmlNodePtr) self->document;
   
   if (ok)
-    ok = (xmlNodeList_push(&(self->context), node) == XQ_OK);
+    ok = (xQNodeList_push(&(self->context), node) == XQ_OK);
   
   if (!ok) {
     xQ_free(self, 1);
@@ -83,7 +83,7 @@ xQ* xQ_alloc_initFile(const char* filename) {
     node = (xmlNodePtr) self->document;
   
   if (ok)
-    ok = (xmlNodeList_push(&(self->context), node) == XQ_OK);
+    ok = (xQNodeList_push(&(self->context), node) == XQ_OK);
   
   if (!ok) {
     xQ_free(self, 1);
@@ -114,7 +114,7 @@ xQ* xQ_alloc_initMemory(const char* buffer, int size) {
     node = (xmlNodePtr) self->document;
   
   if (ok)
-    ok = (xmlNodeList_push(&(self->context), node) == XQ_OK);
+    ok = (xQNodeList_push(&(self->context), node) == XQ_OK);
   
   if (!ok) {
     xQ_free(self, 1);
