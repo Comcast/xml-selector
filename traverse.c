@@ -41,3 +41,29 @@ xQStatusCode _xQ_findDescendantsByName(xQ* context, xmlChar** args, xmlNodePtr n
 xQStatusCode _xQ_addToOutput(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList) {
   return xQNodeList_push(outList, node);
 }
+
+/**
+ * Add the node to the output list only if it has an attribute with an
+ * exact value.
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
+ */
+xQStatusCode _xQ_filterAttributeEquals(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList) {
+  const xmlChar* name = args[0];
+  const xmlChar* value = args[1];
+  xmlChar* thisValue;
+  xQStatusCode result = XQ_OK;
+  
+  if (node) {
+    thisValue = xmlGetProp(node, name);
+    if (thisValue) {
+      
+      if (xmlStrcmp(thisValue, value) == 0)
+        result = xQNodeList_push(outList, node);
+      
+      xmlFree(thisValue);
+    }
+  }
+  
+  return result;
+}
