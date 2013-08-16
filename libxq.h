@@ -15,7 +15,8 @@ extern "C" {
 typedef enum {
   XQ_OK = 0,
   XQ_OUT_OF_MEMORY,
-  XQ_ARGUMENT_OUT_OF_BOUNDS
+  XQ_ARGUMENT_OUT_OF_BOUNDS,
+  XQ_XML_PARSER_ERROR
 } xQStatusCode;
 
 typedef struct _xQNodeList {
@@ -24,7 +25,7 @@ typedef struct _xQNodeList {
   unsigned long size;
 } xQNodeList;
 
-xQNodeList* xQNodeList_alloc_init(unsigned long size);
+xQStatusCode xQNodeList_alloc_init(xQNodeList** list, unsigned long size);
 xQStatusCode xQNodeList_init(xQNodeList* list, unsigned long size);
 xQStatusCode xQNodeList_free(xQNodeList* list, int freeList);
 xQStatusCode xQNodeList_insert(xQNodeList* list, xmlNodePtr node, unsigned long atIdx);
@@ -40,10 +41,10 @@ typedef struct _xQ {
   xQNodeList context;
 } xQ;
 
-xQ* xQ_alloc_init();
-xQ* xQ_alloc_initDoc(xmlDocPtr doc);
-xQ* xQ_alloc_initFile(const char* filename);
-xQ* xQ_alloc_initMemory(const char* buffer, int size);
+xQStatusCode xQ_alloc_init(xQ** self);
+xQStatusCode xQ_alloc_initDoc(xQ** self, xmlDocPtr doc);
+xQStatusCode xQ_alloc_initFile(xQ** self, const char* filename, xmlDocPtr* doc);
+xQStatusCode xQ_alloc_initMemory(xQ** self, const char* buffer, int size, xmlDocPtr* doc);
 xQStatusCode xQ_init(xQ* self);
 xQStatusCode xQ_free(xQ* self, int freeXQ);
 xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result);

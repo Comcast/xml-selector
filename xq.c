@@ -14,117 +14,134 @@ static xmlChar* xQ_textOfDescendants(xmlDocPtr doc, xmlNodePtr node, int inLine)
 /**
  * Allocate and initialize a new empty xQ
  *
- * Returns a pointer to the new instance or 0 on error
+ * The parameter self is set to the pointer to the new instance on success
+ * or 0 on error.
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
  */
-xQ* xQ_alloc_init() {
-  xQ* self;
+xQStatusCode xQ_alloc_init(xQ** self) {
+  xQStatusCode status = XQ_OK;
   
-  self = (xQ*) malloc(sizeof(xQ));
-  if (!self)
-    return 0;
+  *self = (xQ*) malloc(sizeof(xQ));
+  if (!*self)
+    return XQ_OUT_OF_MEMORY;
   
-  if (XQ_OK != xQ_init(self)) {
-    free(self);
-    self = 0;
+  if (XQ_OK != (status = xQ_init(*self))) {
+    free(*self);
+    *self = 0;
   }
   
-  return self;
+  return status;
 }
 
 /**
  * Allocate and initialize a new xQ using a an existing XML document as
  * the context.
  *
- * This creates a deep copy of the document which is released when the xQ
- * object is freed.
+ * The parameter self is set to the pointer to the new instance on success
+ * or 0 on error.
  *
- * Returns a pointer to the new instance or 0 on error
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
  */
-xQ* xQ_alloc_initDoc(xmlDocPtr doc) {
-  xQ* self;
-  xmlNodePtr node;
-  int ok;
+xQStatusCode xQ_alloc_initDoc(xQ** self, xmlDocPtr doc) {
+  xQStatusCode status = XQ_OK;
   
-  self = xQ_alloc_init();
-  if (!self)
-    return 0;
+  status = xQ_alloc_init(self);
+  if (status != XQ_OK)
+    return status;
   
-  ok = ( self->document = xmlCopyDoc(doc, 1) ) != 0;
+  (*self)->document = doc;
   
-  if (ok)
-    node = (xmlNodePtr) self->document;
+  status = xQNodeList_push(&((*self)->context), (xmlNodePtr) doc);
   
-  if (ok)
-    ok = (xQNodeList_push(&(self->context), node) == XQ_OK);
-  
-  if (!ok) {
-    xQ_free(self, 1);
-    self = 0;
+  if (status != XQ_OK) {
+    xQ_free(*self, 1);
+    *self = 0;
   }
   
-  return self;
+  return status;
 }
 
 /**
  * Allocate and initialize a new xQ using a an XML document from a file
  * as the context.
  *
- * Returns a pointer to the new instance or 0 on error
+ * The parameter self is set to the pointer to the new instance on success
+ * or 0 on error.
+ *
+ * The parameter doc is set to the pointer to the created document on
+ * success. The caller is responsible for freeing the allocated document
+ * when appropriate. This is to allow refererences to the document to
+ * live beyond the life of the xQ object, particularly when implementing
+ * other languange bindings which may allow direct access to the node
+ * list and its contents.
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
  */
-xQ* xQ_alloc_initFile(const char* filename) {
-  xQ* self;
-  xmlNodePtr node;
-  int ok;
+xQStatusCode xQ_alloc_initFile(xQ** self, const char* filename, xmlDocPtr* doc) {
+  xQStatusCode status = XQ_OK;
   
-  self = xQ_alloc_init();
-  if (!self)
-    return 0;
+  *doc = 0;
   
-  ok = ( self->document = xmlParseFile(filename) ) != 0;
+  status = xQ_alloc_init(self);
+  if (status != XQ_OK)
+    return status;
   
-  if (ok)
-    node = (xmlNodePtr) self->document;
+  if ( ((*self)->document = xmlParseFile(filename)) == 0 )
+    status = XQ_XML_PARSER_ERROR;
+    
+  *doc = (*self)->document;
   
-  if (ok)
-    ok = (xQNodeList_push(&(self->context), node) == XQ_OK);
+  if (status == XQ_OK)
+    status = xQNodeList_push(&((*self)->context), (xmlNodePtr) *doc);
   
-  if (!ok) {
-    xQ_free(self, 1);
-    self = 0;
+  if (status != XQ_OK) {
+    xQ_free(*self, 1);
+    *self = 0;
   }
   
-  return self;
+  return status;
 }
 
 /**
  * Allocate and initialize a new xQ using a an XML document from a memory
  * buffer as the context.
  *
- * Returns a pointer to the new instance or 0 on error
+ * The parameter self is set to the pointer to the new instance on success
+ * or 0 on error.
+ *
+ * The parameter doc is set to the pointer to the created document on
+ * success. The caller is responsible for freeing the allocated document
+ * when appropriate. This is to allow refererences to the document to
+ * live beyond the life of the xQ object, particularly when implementing
+ * other languange bindings which may allow direct access to the node
+ * list and its contents.
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
  */
-xQ* xQ_alloc_initMemory(const char* buffer, int size) {
-  xQ* self;
-  xmlNodePtr node;
-  int ok;
+xQStatusCode xQ_alloc_initMemory(xQ** self, const char* buffer, int size, xmlDocPtr* doc) {
+  xQStatusCode status = XQ_OK;
   
-  self = xQ_alloc_init();
-  if (!self)
-    return 0;
+  *doc = 0;
   
-  ok = ( self->document = xmlParseMemory(buffer, size) ) != 0;
+  status = xQ_alloc_init(self);
+  if (status != XQ_OK)
+    return status;
   
-  if (ok)
-    node = (xmlNodePtr) self->document;
+  if ( ((*self)->document = xmlParseMemory(buffer, size) ) == 0 )
+    status = XQ_XML_PARSER_ERROR;
   
-  if (ok)
-    ok = (xQNodeList_push(&(self->context), node) == XQ_OK);
+  *doc = (*self)->document;
   
-  if (!ok) {
-    xQ_free(self, 1);
-    self = 0;
+  if (status == XQ_OK)
+    status = xQNodeList_push(&((*self)->context), (xmlNodePtr) *doc);
+  
+  if (status != XQ_OK) {
+    xQ_free(*self, 1);
+    *self = 0;
   }
   
-  return self;
+  return status;
 }
 
 
@@ -145,8 +162,6 @@ xQStatusCode xQ_init(xQ* self) {
  * Returns a 0 (XQ_OK) on success, an error code otherwise
  */
 xQStatusCode xQ_free(xQ* self, int freeXQ) {
-  if (self && self->document)
-    xmlFreeDoc(self->document);
   if (self)
     xQNodeList_free(&(self->context), 0);
   if (freeXQ)
@@ -233,10 +248,9 @@ xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result) {
   if (!expr)
     return XQ_OUT_OF_MEMORY;
   
-  if (self->document)
-    *result = xQ_alloc_initDoc(self->document);
-  else
-    *result = xQ_alloc_init();
+  retcode = xQ_alloc_init(result);
+  if (retcode == XQ_OK)
+    (*result)->document = self->document;
 
   if (!*result)
     retcode = XQ_OUT_OF_MEMORY;
@@ -247,8 +261,8 @@ xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result) {
     retcode = xQSearchExpr_eval(expr, self, self->context.list[i], &((*result)->context));
   
   if (retcode != XQ_OK) {
-    *result = 0;
     xQ_free(*result, 1);
+    *result = 0;
   }
   
   xQSearchExpr_free(expr);

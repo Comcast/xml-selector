@@ -15,21 +15,25 @@ static xQStatusCode xQNodeList_grow(xQNodeList* list, unsigned long requiredCapa
 /**
  * Allocate and initialize a new node list
  *
- * Returns a pointer to the node list or 0 on error
+ * The parameter list is assigned a pointer to the node list on success,
+ * or 0 on error.
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
  */
-xQNodeList* xQNodeList_alloc_init(unsigned long size) {
-  xQNodeList* list;
+xQStatusCode xQNodeList_alloc_init(xQNodeList** list, unsigned long size) {
+  xQStatusCode status = XQ_OK;
   
-  list = (xQNodeList*) malloc(sizeof(xQNodeList));
-  if (!list)
-    return 0;
+  *list = (xQNodeList*) malloc(sizeof(xQNodeList));
+  if (!*list)
+    return XQ_OUT_OF_MEMORY;
   
-  if (XQ_OK != xQNodeList_init(list, size)) {
-    free(list);
-    list = 0;
+  
+  if (XQ_OK != (status = xQNodeList_init(*list, size))) {
+    free(*list);
+    *list = 0;
   }
   
-  return list;
+  return status;
 }
 
 /**
