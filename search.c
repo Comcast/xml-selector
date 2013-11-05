@@ -405,28 +405,28 @@ static xQStatusCode xQSearchExpr_parseAttrib(xQSearchExpr** expr, xQToken* tok) 
     
     // IDENT
     status = nextToken(&peek);
-    attrName = peek.content;
+    if (status == XQ_OK) attrName = peek.content;
     
     if (status == XQ_OK && peek.type != XQ_TT_IDENT)
       status = XQ_INVALID_SEL_UNEXPECTED_TOKEN;
 
     // =
     if (status == XQ_OK) status = nextToken(&peek);
-    oper = peek.content;
+    if (status == XQ_OK) oper = peek.content;
 
     if (status == XQ_OK && (peek.type != XQ_TT_TOKEN || *oper != '='))
       status = XQ_INVALID_SEL_UNEXPECTED_TOKEN;
     
     // string | IDENT
     if (status == XQ_OK) status = nextToken(&peek);
-    attrValue = peek.content;
+    if (status == XQ_OK) attrValue = peek.content;
     
     if (status == XQ_OK && peek.type != XQ_TT_STRING && peek.type != XQ_TT_IDENT)
       status = XQ_INVALID_SEL_UNEXPECTED_TOKEN;
 
     // ]
     if (status == XQ_OK) status = nextToken(&peek);
-    endAttr = peek.content;
+    if (status == XQ_OK) endAttr = peek.content;
     
     if (status == XQ_OK && (peek.type != XQ_TT_TOKEN || *endAttr != ']'))
       status = XQ_INVALID_SEL_UNEXPECTED_TOKEN;
