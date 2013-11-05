@@ -87,7 +87,7 @@ static xQStatusCode xQNodeList_grow(xQNodeList* list, unsigned long requiredCapa
   newCapacity = list->capacity < 8 ? 8 : list->capacity;
   
   while (newCapacity < requiredCapacity && newCapacity >= list->capacity)
-    newCapacity << 2;
+    newCapacity <<= 2;
   
   if (newCapacity < requiredCapacity)
     return XQ_ARGUMENT_OUT_OF_BOUNDS;

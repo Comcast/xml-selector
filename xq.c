@@ -166,6 +166,8 @@ xQStatusCode xQ_free(xQ* self, int freeXQ) {
     xQNodeList_free(&(self->context), 0);
   if (freeXQ)
     free(self);
+  
+  return XQ_OK;
 }
 
 /**
@@ -244,9 +246,9 @@ xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result) {
   
   *result = 0;
   
-  expr = xQSearchExpr_alloc_init(selector);
-  if (!expr)
-    return XQ_OUT_OF_MEMORY;
+  retcode = xQSearchExpr_alloc_init(&expr, selector);
+  if (retcode != XQ_OK)
+    return retcode;
   
   retcode = xQ_alloc_init(result);
   if (retcode == XQ_OK)
@@ -291,5 +293,5 @@ xmlChar* xQ_getAttr(xQ* self, const char* name) {
   if ( (!self->context.size) || (!self->context.list[0]) )
     return 0;
   
-  return xmlGetProp(self->context.list[0], name);
+  return xmlGetProp(self->context.list[0], (xmlChar*)name);
 }

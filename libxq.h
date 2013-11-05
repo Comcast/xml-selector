@@ -16,7 +16,10 @@ typedef enum {
   XQ_OK = 0,
   XQ_OUT_OF_MEMORY,
   XQ_ARGUMENT_OUT_OF_BOUNDS,
-  XQ_XML_PARSER_ERROR
+  XQ_XML_PARSER_ERROR,
+  XQ_NO_TOKEN, // this is an internal status code
+  XQ_INVALID_SEL_UNTERMINATED_STR,
+  XQ_INVALID_SEL_UNEXPECTED_TOKEN
 } xQStatusCode;
 
 typedef struct _xQNodeList {
@@ -64,11 +67,12 @@ struct _xQSearchExpr {
   xQSearchExpr* next;
 };
 
-xQSearchExpr* xQSearchExpr_alloc_init(const xmlChar* expr);
+xQStatusCode xQSearchExpr_alloc_init(xQSearchExpr** self, const xmlChar* expr);
 xQStatusCode xQSearchExpr_free(xQSearchExpr* self);
 xQStatusCode xQSearchExpr_eval(xQSearchExpr* self, xQ* context, xmlNodePtr node, xQNodeList* outList);
 
 xQStatusCode _xQ_findDescendantsByName(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList);
+xQStatusCode _xQ_findChildrenByName(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList);
 xQStatusCode _xQ_filterAttributeEquals(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList);
 xQStatusCode _xQ_addToOutput(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList);
 
