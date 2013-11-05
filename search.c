@@ -4,14 +4,9 @@
 
 #include "libxq.h"
 
-// local (private) routines and data types
-static xQStatusCode xQSearchExpr_alloc_init_copy(xQSearchExpr** self);
-static xQStatusCode xQSearchExpr_alloc_init_searchDescendants(xQSearchExpr** self, xmlChar* name);
-static xQStatusCode xQSearchExpr_alloc_init_searchImmediate(xQSearchExpr** self, xmlChar* name);
-static xQStatusCode xQSearchExpr_alloc_init_filterAttrEquals(xQSearchExpr** self, xmlChar* name, xmlChar* value);
-static xQStatusCode xQSearchExpr_parseSelector(xQSearchExpr** expr, const xmlChar** strPtr);
-static xQStatusCode xQSearchExpr_parseAttrib(xQSearchExpr** expr, const xmlChar** strPtr);
+#include <string.h>
 
+// local (private) routines and data types
 typedef enum {
   XQ_TT_TOKEN,
   XQ_TT_IDENT,
@@ -22,10 +17,19 @@ typedef enum {
 typedef struct _xQToken {
   xQTokenType type;
   xmlChar* content;
+  const xmlChar* strPtr;
 } xQToken;
 
-static xQStatusCode nextToken(const xmlChar** strPtr, xQToken* tokenOut);
+static xQStatusCode xQSearchExpr_alloc_init_copy(xQSearchExpr** self);
+static xQStatusCode xQSearchExpr_alloc_init_searchDescendants(xQSearchExpr** self, xmlChar* name);
+static xQStatusCode xQSearchExpr_alloc_init_searchImmediate(xQSearchExpr** self, xmlChar* name);
+static xQStatusCode xQSearchExpr_alloc_init_filterAttrEquals(xQSearchExpr** self, xmlChar* name, xmlChar* value);
+static xQStatusCode xQSearchExpr_parseSelector(xQSearchExpr** expr, xQToken* tok);
+static xQStatusCode xQSearchExpr_parseAttrib(xQSearchExpr** expr, xQToken* tok);
+static xQStatusCode nextToken(xQToken* tokenContext);
 static int xmlstrpos(const xmlChar* haystack, xmlChar needle);
+#define initToken(t) memset(t, 0, sizeof(xQToken))
+#define copyToken(dest, src) memcpy(dest, src, sizeof(xQToken))
 
 /*
  * Selector grammar:
@@ -114,7 +118,7 @@ static const xQCharacterClass characterClassTable[] = {
   XQ_TYPE_NS | XQ_TYPE_NQ,
   XQ_TYPE_NS | XQ_TYPE_NQ,
   XQ_TYPE_TOKEN | XQ_TYPE_NQ, // =
-  XQ_TYPE_NS | XQ_TYPE_NQ,
+  XQ_TYPE_TOKEN | XQ_TYPE_NQ, // >
   XQ_TYPE_NS | XQ_TYPE_NQ,
   XQ_TYPE_NS | XQ_TYPE_NQ,
   XQ_TYPE_NS | XQ_TYPE_NQ,
@@ -173,55 +177,55 @@ static int xmlstrpos(const xmlChar* haystack, xmlChar needle) {
 /**
  * Return the next token from the string
  */
-static xQStatusCode nextToken(const xmlChar** strPtr, xQToken* tokenOut) {
-  const xmlChar* start = *strPtr;
+static xQStatusCode nextToken(xQToken* tokenContext) {
+  const xmlChar* start = tokenContext->strPtr;
   xmlChar* strStr = 0;
   xmlChar* strOut = 0;
   
-  tokenOut->type = XQ_TT_NONE;
-  tokenOut->content = 0;
+  tokenContext->type = XQ_TT_NONE;
+  tokenContext->content = 0;
   
   // consume any leading space
   while (*start && xqIsSpace(*start))
     ++start;
   
   // advance the pointer to the end of the token
-  *strPtr = start;
+  tokenContext->strPtr = start;
   
   // STRING
   if (*start == '"' || *start == '\'') {
-    ++(*strPtr);
+    ++(tokenContext->strPtr);
 
-    strStr = malloc(xmlStrlen(*strPtr));
-    if ((!strStr) && (*strPtr))
+    strStr = malloc(xmlStrlen(tokenContext->strPtr));
+    if ((!strStr) && *(tokenContext->strPtr))
       return XQ_OUT_OF_MEMORY;
     strOut = strStr;
     
-    while (**strPtr) {
-      while (xqIsNotQuote(**strPtr))
-        *(strOut++) = *((*strPtr)++);
+    while (*(tokenContext->strPtr)) {
+      while (xqIsNotQuote(*(tokenContext->strPtr)))
+        *(strOut++) = *(tokenContext->strPtr++);
 
       // escape
-      if (**strPtr == '\\') {
-        if (xqIsNotQuote(*(*strPtr+1))) {
-          *(strOut++) = *((*strPtr)++);
-          *(strOut++) = *((*strPtr)++);
+      if (*(tokenContext->strPtr) == '\\') {
+        if (xqIsNotQuote(*(tokenContext->strPtr+1))) {
+          *(strOut++) = *(tokenContext->strPtr++);
+          *(strOut++) = *(tokenContext->strPtr++);
 
-        } else if (*(*strPtr+1)) {
-          ++(*strPtr);
-          *(strOut++) = *((*strPtr)++);
+        } else if (*(tokenContext->strPtr+1)) {
+          ++(tokenContext->strPtr);
+          *(strOut++) = *(tokenContext->strPtr++);
         }
 
       // opposite quote
-      } else if (**strPtr && (**strPtr != *start)) {
-        *(strOut++) = *((*strPtr)++);
+      } else if (*(tokenContext->strPtr) && (*(tokenContext->strPtr) != *start)) {
+        *(strOut++) = *(tokenContext->strPtr++);
 
       // end of string
-      } else if (**strPtr) {
-        ++(*strPtr); // move past the end of string marker
+      } else if (*(tokenContext->strPtr)) {
+        ++(tokenContext->strPtr); // move past the end of string marker
         *strOut = 0;
-        tokenOut->type = XQ_TT_STRING;
-        tokenOut->content = strStr;
+        tokenContext->type = XQ_TT_STRING;
+        tokenContext->content = strStr;
         return XQ_OK;
         
       }
@@ -233,14 +237,14 @@ static xQStatusCode nextToken(const xmlChar** strPtr, xQToken* tokenOut) {
     
   // TOKEN
   } else if (xqIsToken(*start)) {
-    tokenOut->type = XQ_TT_TOKEN;
-    ++(*strPtr);
+    tokenContext->type = XQ_TT_TOKEN;
+    ++(tokenContext->strPtr);
     
   // IDENT
   } else if (*start) {
-    tokenOut->type = XQ_TT_IDENT;
-    while (xqIsNotSpace(**strPtr))
-      ++(*strPtr);
+    tokenContext->type = XQ_TT_IDENT;
+    while (xqIsNotSpace(*(tokenContext->strPtr)))
+      ++(tokenContext->strPtr);
   
   } else {
     
@@ -248,9 +252,10 @@ static xQStatusCode nextToken(const xmlChar** strPtr, xQToken* tokenOut) {
     
   }
     
-  tokenOut->content = xmlStrndup(start, (*strPtr) - start);
+  tokenContext->content = xmlStrndup(start, tokenContext->strPtr - start);
   return XQ_OK;
 }
+
 
 /*
 void dumpAST(xQSearchExpr* self, int level) {
@@ -282,6 +287,7 @@ void dumpAST(xQSearchExpr* self, int level) {
 }
 */
 
+
 /**
  * Allocate and initialize a new xQSearchExpr object from an expression
  * string.
@@ -291,8 +297,12 @@ void dumpAST(xQSearchExpr* self, int level) {
 xQStatusCode xQSearchExpr_alloc_init(xQSearchExpr** self, const xmlChar* expr) {
   const xmlChar* ptr = expr;
   xQStatusCode status = XQ_OK;
+  xQToken tok;
   
-  status = xQSearchExpr_parseSelector(self, &ptr);
+  initToken(&tok);
+  tok.strPtr = expr;
+  
+  status = xQSearchExpr_parseSelector(self, &tok);
   
   if (status == XQ_OK && (!*self))
     status = xQSearchExpr_alloc_init_copy(self);
@@ -304,62 +314,64 @@ xQStatusCode xQSearchExpr_alloc_init(xQSearchExpr** self, const xmlChar* expr) {
 }
 
 /**
+ * Return the tail from an xQSearchExpr list
+ */
+xQSearchExpr* expressionTail(xQSearchExpr** expr) {
+  xQSearchExpr* lastExpr = *expr;
+
+  while (lastExpr && lastExpr->next)
+    lastExpr = lastExpr->next;
+  
+  return lastExpr;
+}
+
+/**
  * Parse a selector from the string
  *
  * Grammar:
  *
  * selector        <= [ simple_selector | combinator S* simple_selector ] [ S* selector ]*
  */
-static xQStatusCode xQSearchExpr_parseSelector(xQSearchExpr** expr, const xmlChar** strPtr) {
-  xQToken tok;
+static xQStatusCode xQSearchExpr_parseSelector(xQSearchExpr** expr, xQToken* tok) {
   xQStatusCode status = XQ_OK;
-  xQSearchExpr* lastExpr = 0;
   *expr = 0;
   
-  status = nextToken(strPtr, &tok);
+  status = nextToken(tok);
   if (status != XQ_OK)
     return status == XQ_NO_TOKEN ? XQ_OK : status;
   
   // combinator
-  if (tok.type == XQ_TT_TOKEN && tok.content[0] == '>') {
-    xmlFree(tok.content);
+  if (tok->type == XQ_TT_TOKEN && tok->content[0] == '>') {
+    xmlFree(tok->content);
   
-    status = nextToken(strPtr, &tok);
-    if (status == XQ_OK && tok.type == XQ_TT_IDENT) {
-      status = xQSearchExpr_alloc_init_searchImmediate(expr, tok.content);
+    status = nextToken(tok);
+    if (status == XQ_OK && tok->type == XQ_TT_IDENT) {
+      status = xQSearchExpr_alloc_init_searchImmediate(expr, tok->content);
 
       if (status == XQ_OK)
-        status = xQSearchExpr_parseAttrib(&((*expr)->next), strPtr);
-      
-      lastExpr = *expr;
-      while (status == XQ_OK && lastExpr->next)
-        lastExpr = lastExpr->next;
+        status = xQSearchExpr_parseAttrib(&((*expr)->next), tok);
       
       if (status == XQ_OK)
-        status = xQSearchExpr_parseSelector(&(lastExpr->next), strPtr);
+        status = xQSearchExpr_parseSelector(&(expressionTail(expr)->next), tok);
 
     } else if (status == XQ_OK) {
-      xmlFree(tok.content);
+      xmlFree(tok->content);
       return XQ_INVALID_SEL_UNEXPECTED_TOKEN;
     }
 
   // IDENT
-  } else if (tok.type == XQ_TT_IDENT) {
-    status = xQSearchExpr_alloc_init_searchDescendants(expr, tok.content);
+  } else if (tok->type == XQ_TT_IDENT) {
+    status = xQSearchExpr_alloc_init_searchDescendants(expr, tok->content);
     
     if (status == XQ_OK)
-      status = xQSearchExpr_parseAttrib(&((*expr)->next), strPtr);
+      status = xQSearchExpr_parseAttrib(&((*expr)->next), tok);
     
-      lastExpr = *expr;
-      while (status == XQ_OK && lastExpr->next)
-        lastExpr = lastExpr->next;
-      
-      if (status == XQ_OK)
-        status = xQSearchExpr_parseSelector(&(lastExpr->next), strPtr);
+    if (status == XQ_OK)
+      status = xQSearchExpr_parseSelector(&(expressionTail(expr)->next), tok);
   
   // anything else is unexpected
   } else {
-    xmlFree(tok.content);
+    xmlFree(tok->content);
     return XQ_INVALID_SEL_UNEXPECTED_TOKEN;
   }
     
@@ -373,73 +385,71 @@ static xQStatusCode xQSearchExpr_parseSelector(xQSearchExpr** expr, const xmlCha
  *
  * attrib          <= '[' S* IDENT S* '=' S* [ string | IDENT ] S* ']'
  */
-static xQStatusCode xQSearchExpr_parseAttrib(xQSearchExpr** expr, const xmlChar** strPtr) {
-  xQToken tok;
+static xQStatusCode xQSearchExpr_parseAttrib(xQSearchExpr** expr, xQToken* tok) {
+  xQToken peek;
   xQStatusCode status = XQ_OK;
-  const xmlChar* peekPtr = *strPtr;
   xmlChar* attrName = 0;
-  xmlChar operChar = 0;
+  xmlChar* oper = 0;
   xmlChar* attrValue = 0;
+  xmlChar* endAttr = 0;
   *expr = 0;
   
-  status = nextToken(&peekPtr, &tok);
+  copyToken(&peek, tok);
+  
+  status = nextToken(&peek);
   
   // [
-  if (status == XQ_OK && tok.type == XQ_TT_TOKEN && tok.content[0] == '[') {
+  if (status == XQ_OK && peek.type == XQ_TT_TOKEN && peek.content[0] == '[') {
 
-    xmlFree(tok.content);
+    xmlFree(peek.content);
     
     // IDENT
-    status = nextToken(&peekPtr, &tok);
-    if (status == XQ_OK)
-      attrName = tok.content;
-    if (status == XQ_OK && tok.type != XQ_TT_IDENT)
+    status = nextToken(&peek);
+    attrName = peek.content;
+    
+    if (status == XQ_OK && peek.type != XQ_TT_IDENT)
       status = XQ_INVALID_SEL_UNEXPECTED_TOKEN;
 
-    
     // =
-    if (status == XQ_OK)
-      status = nextToken(&peekPtr, &tok);
-    if (status == XQ_OK) {
-      operChar = tok.content[0];
-      xmlFree(tok.content);
-    }
-    if (status == XQ_OK && (tok.type != XQ_TT_TOKEN || operChar != '='))
-      status = XQ_INVALID_SEL_UNEXPECTED_TOKEN;
-      
-    // string | IDENT
-    status = nextToken(&peekPtr, &tok);
-    if (status == XQ_OK)
-      attrValue = tok.content;
-    if (status == XQ_OK && tok.type != XQ_TT_STRING && tok.type != XQ_TT_IDENT)
+    if (status == XQ_OK) status = nextToken(&peek);
+    oper = peek.content;
+
+    if (status == XQ_OK && (peek.type != XQ_TT_TOKEN || *oper != '='))
       status = XQ_INVALID_SEL_UNEXPECTED_TOKEN;
     
-    // ]
-    if (status == XQ_OK)
-      status = nextToken(&peekPtr, &tok);
-    if (status == XQ_OK) {
-      operChar = tok.content[0];
-      xmlFree(tok.content);
-    }
-    if (status == XQ_OK && (tok.type != XQ_TT_TOKEN || operChar != ']'))
+    // string | IDENT
+    if (status == XQ_OK) status = nextToken(&peek);
+    attrValue = peek.content;
+    
+    if (status == XQ_OK && peek.type != XQ_TT_STRING && peek.type != XQ_TT_IDENT)
       status = XQ_INVALID_SEL_UNEXPECTED_TOKEN;
+
+    // ]
+    if (status == XQ_OK) status = nextToken(&peek);
+    endAttr = peek.content;
+    
+    if (status == XQ_OK && (peek.type != XQ_TT_TOKEN || *endAttr != ']'))
+      status = XQ_INVALID_SEL_UNEXPECTED_TOKEN;
+    
+    if (oper) xmlFree(oper);
+    if (endAttr) xmlFree(endAttr);
     
     if (status != XQ_OK) {
       if (attrName) xmlFree(attrName);
       if (attrValue) xmlFree(attrValue);
-      return status;
     }
-    
-    status = xQSearchExpr_alloc_init_filterAttrEquals(expr, attrName, attrValue);
+
+    if (status == XQ_OK)
+      status = xQSearchExpr_alloc_init_filterAttrEquals(expr, attrName, attrValue);
     
     if (status == XQ_OK) {
-      *strPtr = peekPtr;
-      return xQSearchExpr_parseAttrib(&((*expr)->next), strPtr);
+      copyToken(tok, &peek);
+      return xQSearchExpr_parseAttrib(&((*expr)->next), tok);
     }
     
   } else if (status == XQ_OK) {
     // no attributes
-    xmlFree(tok.content);
+    xmlFree(peek.content);
   }
   
   return status;
