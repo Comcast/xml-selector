@@ -438,6 +438,9 @@ static xQStatusCode xQSearchExpr_parseAttrib(xQSearchExpr** expr, xQToken* tok) 
       if (attrName) xmlFree(attrName);
       if (attrValue) xmlFree(attrValue);
     }
+    
+    if (status == XQ_NO_TOKEN)
+      status = XQ_INVALID_SEL_UNEXPECTED_TOKEN;
 
     if (status == XQ_OK)
       status = xQSearchExpr_alloc_init_filterAttrEquals(expr, attrName, attrValue);
