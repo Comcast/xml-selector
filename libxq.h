@@ -48,6 +48,7 @@ xQStatusCode xQ_alloc_init(xQ** self);
 xQStatusCode xQ_alloc_initDoc(xQ** self, xmlDocPtr doc);
 xQStatusCode xQ_alloc_initFile(xQ** self, const char* filename, xmlDocPtr* doc);
 xQStatusCode xQ_alloc_initMemory(xQ** self, const char* buffer, int size, xmlDocPtr* doc);
+xQStatusCode xQ_alloc_initNodeList(xQ** self, xQNodeList* list);
 xQStatusCode xQ_init(xQ* self);
 xQStatusCode xQ_free(xQ* self, int freeXQ);
 xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result);

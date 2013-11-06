@@ -144,6 +144,37 @@ xQStatusCode xQ_alloc_initMemory(xQ** self, const char* buffer, int size, xmlDoc
   return status;
 }
 
+/**
+ * Allocate and initialize a new xQ using a list of nodes from an
+ * existing XML document.
+ *
+ * The parameter self is set to the pointer to the new instance on success
+ * or 0 on error.
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
+ */
+xQStatusCode xQ_alloc_initNodeList(xQ** self, xQNodeList* list) {
+  xQStatusCode status = XQ_OK;
+
+  *self = (xQ*) malloc(sizeof(xQ));
+  if (!*self)
+    return XQ_OUT_OF_MEMORY;
+  
+  (*self)->document = list->size > 0 ? list->list[0]->doc : 0;
+  
+  status = xQNodeList_init(&((*self)->context), list->size);
+  
+  if (status == XQ_OK)
+    status = xQNodeList_assign(&((*self)->context), list);
+
+  if (XQ_OK != status) {
+    xQ_free(*self, 1);
+    *self = 0;
+  }
+  
+  return status;
+}
+
 
 /**
  * Initialize a newly allocated xQ
