@@ -58,6 +58,25 @@ xQStatusCode _xQ_findChildrenByName(xQ* context, xmlChar** args, xmlNodePtr node
 }
 
 /**
+ * Examine next sibling of node for a matching name and the sibling to
+ * the output list if it matches.
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
+ */
+xQStatusCode _xQ_findNextSiblingByName(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList) {
+  const xmlChar* name = args[0];
+  xQStatusCode result = XQ_OK;
+  xmlNodePtr sibling;
+  
+  if (node->type == XML_ELEMENT_NODE && (sibling = xmlNextElementSibling(node))) {
+    if (xmlStrcmp(name, sibling->name) == 0)
+      result = xQNodeList_push(outList, sibling);
+  }
+  
+  return result;
+}
+
+/**
  * Copy node to the output list
  *
  * Returns a 0 (XQ_OK) on success, an error code otherwise

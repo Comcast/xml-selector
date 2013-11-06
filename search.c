@@ -23,8 +23,10 @@ typedef struct _xQToken {
 static xQStatusCode xQSearchExpr_alloc_init_copy(xQSearchExpr** self);
 static xQStatusCode xQSearchExpr_alloc_init_searchDescendants(xQSearchExpr** self, xmlChar* name);
 static xQStatusCode xQSearchExpr_alloc_init_searchImmediate(xQSearchExpr** self, xmlChar* name);
+static xQStatusCode xQSearchExpr_alloc_init_searchNextSibling(xQSearchExpr** self, xmlChar* name);
 static xQStatusCode xQSearchExpr_alloc_init_filterAttrEquals(xQSearchExpr** self, xmlChar* name, xmlChar* value);
 static xQStatusCode xQSearchExpr_parseSelector(xQSearchExpr** expr, xQToken* tok);
+static xQStatusCode xQSearchExpr_parseCombinator(xQSearchExpr** expr, xQToken* tok);
 static xQStatusCode xQSearchExpr_parseAttrib(xQSearchExpr** expr, xQToken* tok);
 static xQStatusCode nextToken(xQToken* tokenContext);
 static int xmlstrpos(const xmlChar* haystack, xmlChar needle);
@@ -35,7 +37,7 @@ static int xmlstrpos(const xmlChar* haystack, xmlChar needle);
  * Selector grammar:
  *
  * selector        <= [ simple_selector | combinator S* simple_selector ] [ S* selector ]*
- * combinator      <= '>'
+ * combinator      <= '>' | '+'
  * simple_selector <= element_name [ attrib ]*
  * element_name    <= IDENT
  * attrib          <= '[' S* IDENT S* '=' S* [ string | IDENT ] S* ']'
@@ -99,7 +101,7 @@ static const xQCharacterClass characterClassTable[] = {
   XQ_TYPE_NS | XQ_TYPE_NQ,
   XQ_TYPE_NS | XQ_TYPE_NQ,
   XQ_TYPE_NS | XQ_TYPE_NQ,
-  XQ_TYPE_NS | XQ_TYPE_NQ,
+  XQ_TYPE_TOKEN | XQ_TYPE_NQ, // +
   XQ_TYPE_NS | XQ_TYPE_NQ,
   XQ_TYPE_NS | XQ_TYPE_NQ,
   XQ_TYPE_NS | XQ_TYPE_NQ,
@@ -341,23 +343,8 @@ static xQStatusCode xQSearchExpr_parseSelector(xQSearchExpr** expr, xQToken* tok
     return status == XQ_NO_TOKEN ? XQ_OK : status;
   
   // combinator
-  if (tok->type == XQ_TT_TOKEN && tok->content[0] == '>') {
-    xmlFree(tok->content);
-  
-    status = nextToken(tok);
-    if (status == XQ_OK && tok->type == XQ_TT_IDENT) {
-      status = xQSearchExpr_alloc_init_searchImmediate(expr, tok->content);
-
-      if (status == XQ_OK)
-        status = xQSearchExpr_parseAttrib(&((*expr)->next), tok);
-      
-      if (status == XQ_OK)
-        status = xQSearchExpr_parseSelector(&(expressionTail(expr)->next), tok);
-
-    } else if (status == XQ_OK) {
-      xmlFree(tok->content);
-      return XQ_INVALID_SEL_UNEXPECTED_TOKEN;
-    }
+  if (tok->type == XQ_TT_TOKEN && (tok->content[0] == '>' || tok->content[0] == '+')) {
+    status = xQSearchExpr_parseCombinator(expr, tok);
 
   // IDENT
   } else if (tok->type == XQ_TT_IDENT) {
@@ -375,6 +362,47 @@ static xQStatusCode xQSearchExpr_parseSelector(xQSearchExpr** expr, xQToken* tok
     return XQ_INVALID_SEL_UNEXPECTED_TOKEN;
   }
     
+  return status == XQ_NO_TOKEN ? XQ_OK : status;
+}
+
+/**
+ * Parse a combinator and selector from the string
+ *
+ * Grammar:
+ *
+ * selector        <= [ simple_selector | combinator S* simple_selector ] [ S* selector ]*
+ * combinator      <= '>' | '+'
+ */
+static xQStatusCode xQSearchExpr_parseCombinator(xQSearchExpr** expr, xQToken* tok) {
+  xmlChar combinator = tok->content[0];
+  xQStatusCode status = XQ_OK;
+  xQStatusCode (*ctorPtr)(xQSearchExpr**, xmlChar*) = 0;
+  
+  xmlFree(tok->content);
+  
+  if (combinator == '>')
+    ctorPtr = xQSearchExpr_alloc_init_searchImmediate;
+  else if (tok->content[0] == '+')
+    ctorPtr = xQSearchExpr_alloc_init_searchNextSibling;
+  else
+    return XQ_INVALID_SEL_UNEXPECTED_TOKEN;
+  
+
+  status = nextToken(tok);
+  if (status == XQ_OK && tok->type == XQ_TT_IDENT) {
+    status = ctorPtr(expr, tok->content);
+
+    if (status == XQ_OK)
+      status = xQSearchExpr_parseAttrib(&((*expr)->next), tok);
+    
+    if (status == XQ_OK)
+      status = xQSearchExpr_parseSelector(&(expressionTail(expr)->next), tok);
+
+  } else {
+    if (status == XQ_OK) xmlFree(tok->content);
+    return XQ_INVALID_SEL_UNEXPECTED_TOKEN;
+  }
+  
   return status == XQ_NO_TOKEN ? XQ_OK : status;
 }
 
@@ -526,6 +554,35 @@ static xQStatusCode xQSearchExpr_alloc_init_searchImmediate(xQSearchExpr** self,
     (*self)->argc = 1;
     (*self)->argv[0] = name;
     (*self)->operation = _xQ_findChildrenByName;
+    (*self)->next = 0;
+  } else {
+    xmlFree(name);
+    free(*self);
+    return XQ_OUT_OF_MEMORY;
+  }
+  
+  return XQ_OK;
+}
+
+/**
+ * Allocate and initialize a new xQSearchExpr object that searches the
+ * input node for next siblings with a given name.
+ *
+ * Returns a pointer to the new instance or 0 on error
+ */
+static xQStatusCode xQSearchExpr_alloc_init_searchNextSibling(xQSearchExpr** self, xmlChar* name) {
+  
+  *self = (xQSearchExpr*) malloc(sizeof(xQSearchExpr));
+  if (!(*self)) {
+    xmlFree(name);
+    return XQ_OUT_OF_MEMORY;
+  }
+  
+  (*self)->argv = (xmlChar**) malloc(sizeof(xmlChar*));
+  if ((*self)->argv) {
+    (*self)->argc = 1;
+    (*self)->argv[0] = name;
+    (*self)->operation = _xQ_findNextSiblingByName;
     (*self)->next = 0;
   } else {
     xmlFree(name);
