@@ -21,6 +21,7 @@ typedef struct _xQToken {
 } xQToken;
 
 static xQStatusCode xQSearchExpr_alloc_init_copy(xQSearchExpr** self);
+static xQStatusCode xQSearchExpr_alloc_init_allDescendants(xQSearchExpr** self);
 static xQStatusCode xQSearchExpr_alloc_init_searchDescendants(xQSearchExpr** self, xmlChar* name);
 static xQStatusCode xQSearchExpr_alloc_init_searchImmediate(xQSearchExpr** self, xmlChar* name);
 static xQStatusCode xQSearchExpr_alloc_init_searchNextSibling(xQSearchExpr** self, xmlChar* name);
@@ -39,7 +40,7 @@ static int xmlstrpos(const xmlChar* haystack, xmlChar needle);
  * selector        <= [ simple_selector | combinator S* simple_selector ] [ S* selector ]*
  * combinator      <= '>' | '+'
  * simple_selector <= element_name [ attrib ]*
- * element_name    <= IDENT
+ * element_name    <= IDENT | '*'
  * attrib          <= '[' S* IDENT S* '=' S* [ string | IDENT ] S* ']'
  * string          <= '"' [ NQ | "'" | escape ]* '"' | "'" [ NQ | '"' | escape ]* "'"
  * escape          <= '\' [ '\' | '"' | '"' ]
@@ -100,7 +101,7 @@ static const xQCharacterClass characterClassTable[] = {
   XQ_TYPE_TOKEN, // '
   XQ_TYPE_NS | XQ_TYPE_NQ,
   XQ_TYPE_NS | XQ_TYPE_NQ,
-  XQ_TYPE_NS | XQ_TYPE_NQ,
+  XQ_TYPE_TOKEN | XQ_TYPE_NQ, // *
   XQ_TYPE_TOKEN | XQ_TYPE_NQ, // +
   XQ_TYPE_NS | XQ_TYPE_NQ,
   XQ_TYPE_NS | XQ_TYPE_NQ,
@@ -356,6 +357,16 @@ static xQStatusCode xQSearchExpr_parseSelector(xQSearchExpr** expr, xQToken* tok
     if (status == XQ_OK)
       status = xQSearchExpr_parseSelector(&(expressionTail(expr)->next), tok);
   
+  // *
+  } else if (tok->type == XQ_TT_TOKEN && tok->content[0] == '*') {
+    status = xQSearchExpr_alloc_init_allDescendants(expr);
+    
+    if (status == XQ_OK)
+      status = xQSearchExpr_parseAttrib(&((*expr)->next), tok);
+    
+    if (status == XQ_OK)
+      status = xQSearchExpr_parseSelector(&(expressionTail(expr)->next), tok);
+  
   // anything else is unexpected
   } else {
     xmlFree(tok->content);
@@ -501,6 +512,26 @@ static xQStatusCode xQSearchExpr_alloc_init_copy(xQSearchExpr** self) {
   (*self)->argc = 0;
   (*self)->argv = 0;
   (*self)->operation = _xQ_addToOutput;
+  (*self)->next = 0;
+  
+  return XQ_OK;
+}
+
+/**
+ * Allocate and initialize a new xQSearchExpr object that copies all
+ * descendants of the input node to the output.
+ *
+ * Returns a pointer to the new instance or 0 on error
+ */
+static xQStatusCode xQSearchExpr_alloc_init_allDescendants(xQSearchExpr** self) {
+
+  *self = (xQSearchExpr*) malloc(sizeof(xQSearchExpr));
+  if (!*self)
+    return XQ_OUT_OF_MEMORY;
+  
+  (*self)->argc = 0;
+  (*self)->argv = 0;
+  (*self)->operation = _xQ_findDescendants;
   (*self)->next = 0;
   
   return XQ_OK;

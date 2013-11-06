@@ -7,6 +7,31 @@
 #include <string.h>
 
 /**
+ * Search all decendants of node for elements and populate the output
+ * list with the results.
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
+ */
+xQStatusCode _xQ_findDescendants(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList) {
+  xQStatusCode result = XQ_OK;
+  xmlNodePtr cur = node ? node->children : node;
+  
+  while (cur && result == XQ_OK) {
+    
+    if (cur->type == XML_ELEMENT_NODE) {
+      result = xQNodeList_push(outList, cur);
+      
+      if (cur->children && result == XQ_OK)
+        result = _xQ_findDescendants(context, args, cur, outList);
+    }
+    
+    cur = cur->next;
+  }
+  
+  return result;
+}
+
+/**
  * Search all decendants of node for elements matching name and populate
  * the output list with the results.
  *
