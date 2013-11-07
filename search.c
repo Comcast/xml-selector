@@ -317,6 +317,39 @@ xQStatusCode xQSearchExpr_alloc_init(xQSearchExpr** self, const xmlChar* expr) {
 }
 
 /**
+ * Allocate and initialize a new xQSearchExpr object from an expression
+ * string. The created expression can be used for filtering a node list,
+ * as opposted to searching (searching self instead of descendants).
+ *
+ * Returns a pointer to the new instance or 0 on error
+ */
+xQStatusCode xQSearchExpr_alloc_initFilter(xQSearchExpr** self, const xmlChar* expr) {
+  const xmlChar* ptr = expr;
+  xQStatusCode status = XQ_OK;
+  xQToken tok;
+  
+  initToken(&tok);
+  tok.strPtr = expr;
+  
+  status = xQSearchExpr_parseSelector(self, &tok);
+  
+  if (status == XQ_OK && (!*self))
+    status = xQSearchExpr_alloc_init_copy(self);
+  else if (status == XQ_OK) {
+    // convert to self-search
+    if ((*self)->operation == _xQ_findDescendants)
+      (*self)->operation = _xQ_addToOutput;
+    else if ((*self)->operation == _xQ_findDescendantsByName)
+      (*self)->operation = _xQ_filterByName;
+  }
+  
+  if (status != XQ_OK)
+    xQSearchExpr_free(*self);
+  
+  return status;
+}
+
+/**
  * Return the tail from an xQSearchExpr list
  */
 xQSearchExpr* expressionTail(xQSearchExpr** expr) {

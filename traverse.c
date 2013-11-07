@@ -135,3 +135,25 @@ xQStatusCode _xQ_filterAttributeEquals(xQ* context, xmlChar** args, xmlNodePtr n
   
   return result;
 }
+
+/**
+ * Add the node to the output list only if its name matches a given value.
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
+ */
+xQStatusCode _xQ_filterByName(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList) {
+  const xmlChar* name = args[0];
+  xQStatusCode result = XQ_OK;
+
+  if (node) {
+    
+    if (node->type == XML_ELEMENT_NODE) {
+      if (xmlStrcmp(name, node->name) == 0)
+        result = xQNodeList_push(outList, node);
+      
+    }
+    
+  }
+  
+  return result;
+}

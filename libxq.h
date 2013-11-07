@@ -52,6 +52,7 @@ xQStatusCode xQ_alloc_initNodeList(xQ** self, xQNodeList* list);
 xQStatusCode xQ_init(xQ* self);
 xQStatusCode xQ_free(xQ* self, int freeXQ);
 xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result);
+xQStatusCode xQ_filter(xQ* self, const xmlChar* selector, xQ** result);
 xQStatusCode xQ_clear(xQ* self);
 unsigned long xQ_length(xQ* self);
 xmlChar* xQ_getText(xQ* self);
@@ -72,6 +73,7 @@ struct _xQSearchExpr {
 };
 
 xQStatusCode xQSearchExpr_alloc_init(xQSearchExpr** self, const xmlChar* expr);
+xQStatusCode xQSearchExpr_alloc_initFilter(xQSearchExpr** self, const xmlChar* expr);
 xQStatusCode xQSearchExpr_free(xQSearchExpr* self);
 xQStatusCode xQSearchExpr_eval(xQSearchExpr* self, xQ* context, xmlNodePtr node, xQNodeList* outList);
 
@@ -81,6 +83,7 @@ xQStatusCode _xQ_findChildrenByName(xQ* context, xmlChar** args, xmlNodePtr node
 xQStatusCode _xQ_findNextSiblingByName(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList);
 xQStatusCode _xQ_filterAttributeEquals(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList);
 xQStatusCode _xQ_addToOutput(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList);
+xQStatusCode _xQ_filterByName(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList);
 
 #ifdef __cplusplus
 }
