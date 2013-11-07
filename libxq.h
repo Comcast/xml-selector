@@ -57,6 +57,7 @@ unsigned long xQ_length(xQ* self);
 xmlChar* xQ_getText(xQ* self);
 xmlChar* xQ_getAttr(xQ* self, const char* name);
 xmlChar* xQ_getXml(xQ* self);
+xQStatusCode xQ_first(xQ* self, xQ** result);
 
 
 

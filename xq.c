@@ -330,3 +330,34 @@ xmlChar* xQ_getXml(xQ* self) {
   
   return str;
 }
+
+/**
+ * Create a new xQ object containing only the first item from the current
+ * context (if any). The result parameter is assigned the newly allocated
+ * xQ object and the caller is responsible for freeing it. On failure,
+ * the result parameter is set to null.
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
+ */
+xQStatusCode xQ_first(xQ* self, xQ** result) {
+  xQStatusCode retcode = XQ_OK;
+  
+  *result = 0;
+  
+  retcode = xQ_alloc_init(result);
+  if (retcode == XQ_OK)
+    (*result)->document = self->document;
+
+  if (!*result)
+    retcode = XQ_OUT_OF_MEMORY;
+
+  if (retcode == XQ_OK && self->context.size)
+    xQNodeList_push(&((*result)->context), self->context.list[0]);
+  
+  if (retcode != XQ_OK && (*result)) {
+    xQ_free(*result, 1);
+    *result = 0;
+  }
+  
+  return retcode;
+}
