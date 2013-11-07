@@ -9,7 +9,6 @@
 
 // local (private) routines
 
-
 /**
  * Allocate and initialize a new empty xQ
  *
@@ -284,4 +283,50 @@ xmlChar* xQ_getAttr(xQ* self, const char* name) {
     return 0;
   
   return xmlGetProp(self->context.list[0], (xmlChar*)name);
+}
+
+/**
+ * Return the XML of the first item in an xQ's collection.
+ *
+ * Returns a pointer to the string copy on success, or 0 on failure. The
+ * caller is responsible for freeing any returned string by calling
+ * xmlFree().
+ */
+xmlChar* xQ_getXml(xQ* self) {
+  xmlNodePtr node = 0;
+  xmlBufferPtr buff = 0;
+  xmlChar* str = 0;
+  int strSize = 0;
+  
+  if ( (!self->context.size) || (!self->context.list[0]) || (!self->context.list[0]->children) )
+    return xmlCharStrdup("");
+  
+  node = self->context.list[0];
+  
+  // dump an entire document
+  if (XML_DOCUMENT_NODE == node->type) {
+
+    xmlDocDumpMemory((xmlDoc*)node, &str, &strSize);
+    if (!strSize)
+      return 0;
+
+  // dump a node from within the document
+  } else {
+    
+    buff = xmlBufferCreate();
+    if (!buff)
+      return 0;
+      
+    if (!xmlNodeDump(buff, node->doc, node, 0, 0)) {
+      xmlBufferFree(buff);
+      return 0;
+    }
+    
+    str = (xmlChar*) xmlBufferContent(buff);
+    if (str) str = xmlStrdup(str);
+    xmlBufferFree(buff);
+
+  }
+  
+  return str;
 }
