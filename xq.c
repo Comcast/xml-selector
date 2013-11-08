@@ -289,6 +289,70 @@ xQStatusCode xQ_children(xQ* self, const xmlChar* selector, xQ** result) {
 }
 
 /**
+ * For each item in the current context, travel up the dom until an
+ * element matching the supplied selector is found. The found elements,
+ * if any, are stored in a new xQ object. The result parameter is assigned
+ * the newly allocated xQ object and the caller is responsible for
+ * freeing it. On failure, the result parameter is set to null.
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
+ */
+xQStatusCode xQ_closest(xQ* self, const xmlChar* selector, xQ** result) {
+  xQStatusCode retcode = XQ_OK;
+  xQSearchExpr* expr;
+  xQNodeList tmpList;
+  xmlNodePtr cur, match;
+  unsigned int i;
+  
+  *result = 0;
+  tmpList.list = 0;
+  
+  retcode = xQSearchExpr_alloc_initFilter(&expr, selector);
+  if (retcode != XQ_OK)
+    return retcode;
+  
+  retcode = xQ_alloc_init(result);
+  if (retcode == XQ_OK)
+    (*result)->document = self->document;
+
+  if (!*result)
+    retcode = XQ_OUT_OF_MEMORY;
+  
+  if (retcode == XQ_OK)
+    retcode = xQNodeList_init(&tmpList, self->context.size);
+  
+  for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
+    
+    xmlNodePtr cur = self->context.list[i];
+    match = 0;
+  
+    while (cur && retcode == XQ_OK && (!match)) {
+      
+      xQNodeList_clear(&tmpList);
+      
+      retcode = xQSearchExpr_eval(expr, self, cur, &tmpList);
+    
+      match = (retcode == XQ_OK && tmpList.size == 1 && tmpList.list[0] == cur) ? cur : 0;
+      
+      if (match)
+        xQNodeList_push(&((*result)->context), match);
+    
+      cur = cur->parent;
+    }
+  }
+  
+  if (retcode != XQ_OK) {
+    xQ_free(*result, 1);
+    *result = 0;
+  }
+  
+  xQNodeList_free(&tmpList, 0);
+  xQSearchExpr_free(expr);
+
+  return retcode;
+}
+
+/**
  * Search the current context for selector and return the result as a new
  * xQ object. The result parameter is assigned the newly allocated xQ
  * object and the caller is responsible for freeing it. On failure, the
