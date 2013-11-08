@@ -51,6 +51,7 @@ xQStatusCode xQ_alloc_initMemory(xQ** self, const char* buffer, int size, xmlDoc
 xQStatusCode xQ_alloc_initNodeList(xQ** self, xQNodeList* list);
 xQStatusCode xQ_init(xQ* self);
 xQStatusCode xQ_free(xQ* self, int freeXQ);
+xQStatusCode xQ_children(xQ* self, const xmlChar* selector, xQ** result);
 xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result);
 xQStatusCode xQ_filter(xQ* self, const xmlChar* selector, xQ** result);
 xQStatusCode xQ_clear(xQ* self);

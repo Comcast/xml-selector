@@ -221,6 +221,74 @@ xmlChar* xQ_getText(xQ* self) {
 }
 
 /**
+ * Create a new xQ object containing the children of the current context,
+ * optionally filtered by a selector. The result parameter is assigned
+ * the newly allocated xQ object and the caller is responsible for
+ * freeing it. On failure, the result parameter is set to null. Pass NULL
+ * as the selector parameter to indicate no filter should be applied.
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
+ */
+xQStatusCode xQ_children(xQ* self, const xmlChar* selector, xQ** result) {
+  xQStatusCode retcode = XQ_OK;
+  xQSearchExpr* expr;
+  xQNodeList tmpList;
+  xmlNodePtr cur, match;
+  unsigned int i;
+  
+  expr = 0;
+  *result = 0;
+  tmpList.list = 0;
+  
+  retcode = selector ? xQSearchExpr_alloc_initFilter(&expr, selector) : XQ_OK;
+  if (retcode != XQ_OK)
+    return retcode;
+  
+  retcode = xQ_alloc_init(result);
+  if (retcode == XQ_OK)
+    (*result)->document = self->document;
+
+  if (!*result)
+    retcode = XQ_OUT_OF_MEMORY;
+  
+  if (retcode == XQ_OK)
+    retcode = xQNodeList_init(&tmpList, self->context.size);
+  
+  for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
+    
+    xmlNodePtr cur = self->context.list[i]->children;
+  
+    while (cur && retcode == XQ_OK) {
+      
+      match = cur;
+      
+      if (expr) {
+        xQNodeList_clear(&tmpList);
+    
+        retcode = xQSearchExpr_eval(expr, self, cur, &tmpList);
+    
+        match = (retcode == XQ_OK && tmpList.size == 1 && tmpList.list[0] == cur) ? cur : 0;
+      }
+      
+      if (match)
+        xQNodeList_push(&((*result)->context), match);
+    
+      cur = cur->next;
+    }
+  }
+  
+  if (retcode != XQ_OK) {
+    xQ_free(*result, 1);
+    *result = 0;
+  }
+  
+  xQNodeList_free(&tmpList, 0);
+  xQSearchExpr_free(expr);
+
+  return retcode;
+}
+
+/**
  * Search the current context for selector and return the result as a new
  * xQ object. The result parameter is assigned the newly allocated xQ
  * object and the caller is responsible for freeing it. On failure, the
