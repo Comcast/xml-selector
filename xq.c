@@ -642,6 +642,60 @@ xQStatusCode xQ_nextUntil(xQ* self, const xmlChar* selector, xQ** result) {
 }
 
 /**
+ * Create a new xQ object containing all the nodes in the current context
+ * which do not match the provided selector. The result parameter is
+ * assigned the newly allocated xQ object and the caller is responsible
+ * for freeing it. On failure, the result parameter is set to null.
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
+ */
+xQStatusCode xQ_not(xQ* self, const xmlChar* selector, xQ** result) {
+  xQStatusCode retcode = XQ_OK;
+  xQSearchExpr* expr;
+  xQNodeList tmpList;
+  xmlNodePtr cur;
+  unsigned int i;
+  
+  *result = 0;
+  tmpList.list = 0;
+  
+  retcode = xQSearchExpr_alloc_initFilter(&expr, selector);
+  if (retcode != XQ_OK)
+    return retcode;
+  
+  retcode = xQ_alloc_init(result);
+  if (retcode == XQ_OK)
+    (*result)->document = self->document;
+
+  if (!*result)
+    retcode = XQ_OUT_OF_MEMORY;
+  
+  if (retcode == XQ_OK)
+    retcode = xQNodeList_init(&tmpList, self->context.size);
+  
+  for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
+    xQNodeList_clear(&tmpList);
+    
+    cur = self->context.list[i];
+    
+    retcode = xQSearchExpr_eval(expr, self, cur, &tmpList);
+    
+    if (retcode == XQ_OK && (tmpList.size != 1 || tmpList.list[0] != cur))
+      xQNodeList_push(&((*result)->context), cur);
+  }
+  
+  if (retcode != XQ_OK) {
+    xQ_free(*result, 1);
+    *result = 0;
+  }
+  
+  xQNodeList_free(&tmpList, 0);
+  xQSearchExpr_free(expr);
+
+  return retcode;
+}
+
+/**
  * Create a new xQ object containing the parent node of each node in
  * the current context, optionally filtered by a selector. The result
  * parameter is assigned the newly allocated xQ object and the caller is

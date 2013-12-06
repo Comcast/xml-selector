@@ -58,6 +58,7 @@ xQStatusCode xQ_filter(xQ* self, const xmlChar* selector, xQ** result);
 xQStatusCode xQ_next(xQ* self, const xmlChar* selector, xQ** result);
 xQStatusCode xQ_nextAll(xQ* self, const xmlChar* selector, xQ** result);
 xQStatusCode xQ_nextUntil(xQ* self, const xmlChar* selector, xQ** result);
+xQStatusCode xQ_not(xQ* self, const xmlChar* selector, xQ** result);
 xQStatusCode xQ_parent(xQ* self, const xmlChar* selector, xQ** result);
 xQStatusCode xQ_parents(xQ* self, const xmlChar* selector, xQ** result);
 xQStatusCode xQ_parentsUntil(xQ* self, const xmlChar* selector, xQ** result);
