@@ -32,10 +32,10 @@ static xQStatusCode xQSearchExpr_alloc_init_searchImmediate(xQSearchExpr** self,
 static xQStatusCode xQSearchExpr_alloc_init_searchNextSibling(xQSearchExpr** self, xmlChar* name);
 static xQStatusCode xQSearchExpr_alloc_init_filterAttrEquals(xQSearchExpr** self, xmlChar* name, xmlChar* value);
 static xQStatusCode xQSearchExpr_parseSelector(xQSearchExpr** expr, xQToken* tok);
-static xQStatusCode xQSearchExpr_parseSingleSelector(xQSearchExpr** expr, xQToken* tok);
-static xQStatusCode xQSearchExpr_parseCombinator(xQToken* tok, xQSearchExprCtorPtr* ctor);
-static xQStatusCode xQSearchExpr_parseSimpleSelector(xQSearchExpr** expr, xQToken* tok, xQSearchExprCtorPtr ctor);
-static xQStatusCode xQSearchExpr_parseElementName(xQToken* tok, xmlChar** nsPrefix, xmlChar** name, int* isWildcard);
+static XQINLINE xQStatusCode xQSearchExpr_parseSingleSelector(xQSearchExpr** expr, xQToken* tok);
+static XQINLINE xQStatusCode xQSearchExpr_parseCombinator(xQToken* tok, xQSearchExprCtorPtr* ctor);
+static XQINLINE xQStatusCode xQSearchExpr_parseSimpleSelector(xQSearchExpr** expr, xQToken* tok, xQSearchExprCtorPtr ctor);
+static XQINLINE xQStatusCode xQSearchExpr_parseElementName(xQToken* tok, xmlChar** nsPrefix, xmlChar** name, int* isWildcard);
 static xQStatusCode xQSearchExpr_parseAttribs(xQSearchExpr** expr, xQToken* tok);
 static xQStatusCode nextToken(xQToken* tokenContext);
 static int xmlstrpos(const xmlChar* haystack, xmlChar needle);
@@ -434,7 +434,7 @@ static xQStatusCode xQSearchExpr_parseSelector(xQSearchExpr** expr, xQToken* tok
  *
  * single_selector ::= combinator simple_selector | simple_selector
  */
-static xQStatusCode xQSearchExpr_parseSingleSelector(xQSearchExpr** expr, xQToken* tok) {
+static XQINLINE xQStatusCode xQSearchExpr_parseSingleSelector(xQSearchExpr** expr, xQToken* tok) {
   xQStatusCode status = XQ_OK;
   xQStatusCode cmbStatus = XQ_OK;
   xQSearchExprCtorPtr ctor = xQSearchExpr_alloc_init_searchDescendants;
@@ -459,7 +459,7 @@ static xQStatusCode xQSearchExpr_parseSingleSelector(xQSearchExpr** expr, xQToke
  *
  * combinator      <= '>' | '+'
  */
-static xQStatusCode xQSearchExpr_parseCombinator(xQToken* tok, xQSearchExprCtorPtr* ctorPtr) {
+static XQINLINE xQStatusCode xQSearchExpr_parseCombinator(xQToken* tok, xQSearchExprCtorPtr* ctorPtr) {
 
   if (tok->type == XQ_TT_TOKEN && tokenFirstChar(tok) == '>') {
     *ctorPtr = xQSearchExpr_alloc_init_searchImmediate;
@@ -484,7 +484,7 @@ static xQStatusCode xQSearchExpr_parseCombinator(xQToken* tok, xQSearchExprCtorP
  *
  * simple_selector ::= element_name | element_name attribs
  */
-static xQStatusCode xQSearchExpr_parseSimpleSelector(xQSearchExpr** expr, xQToken* tok, xQSearchExprCtorPtr ctor) {
+static XQINLINE xQStatusCode xQSearchExpr_parseSimpleSelector(xQSearchExpr** expr, xQToken* tok, xQSearchExprCtorPtr ctor) {
   xQStatusCode status = XQ_OK;
   xmlChar* nsPrefix = 0;
   xmlChar* name = 0;
@@ -514,7 +514,7 @@ static xQStatusCode xQSearchExpr_parseSimpleSelector(xQSearchExpr** expr, xQToke
  *
  * element_name    ::= IDENT ':' IDENT | IDENT | '*'
  */
-static xQStatusCode xQSearchExpr_parseElementName(xQToken* tok, xmlChar** nsPrefix, xmlChar** name, int* isWildcard) {
+static XQINLINE xQStatusCode xQSearchExpr_parseElementName(xQToken* tok, xmlChar** nsPrefix, xmlChar** name, int* isWildcard) {
   xQStatusCode status = XQ_OK;
   *isWildcard = 0;
   
