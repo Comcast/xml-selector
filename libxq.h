@@ -19,7 +19,8 @@ typedef enum {
   XQ_XML_PARSER_ERROR,
   XQ_NO_TOKEN, // this is an internal status code
   XQ_INVALID_SEL_UNTERMINATED_STR,
-  XQ_INVALID_SEL_UNEXPECTED_TOKEN
+  XQ_INVALID_SEL_UNEXPECTED_TOKEN,
+  XQ_NO_MATCH // this is an internal status code
 } xQStatusCode;
 
 typedef struct _xQNodeList {
