@@ -38,8 +38,9 @@ START_TEST (test_single_selector)
   
   ck_assert(status == XQ_OK);
   ck_assert(expr->operation == _xQ_findDescendantsByName);
-  ck_assert(expr->argc == 1);
+  ck_assert(expr->argc == 2);
   ck_assert(xmlStrcmp(expr->argv[0], (xmlChar*)"elem") == 0);
+  ck_assert(expr->argv[1] == 0);
   ck_assert(expr->next == 0);
   
   xQSearchExpr_free(expr);
@@ -58,13 +59,15 @@ START_TEST (test_dual_selector)
   
   ck_assert(status == XQ_OK);
   ck_assert(expr->operation == _xQ_findDescendantsByName);
-  ck_assert(expr->argc == 1);
+  ck_assert(expr->argc == 2);
   ck_assert(xmlStrcmp(expr->argv[0], (xmlChar*)"elem1") == 0);
+  ck_assert(expr->argv[1] == 0);
   ck_assert(expr->next != 0);
   
   ck_assert(expr->next->operation == _xQ_findDescendantsByName);
-  ck_assert(expr->next->argc == 1);
+  ck_assert(expr->next->argc == 2);
   ck_assert(xmlStrcmp(expr->next->argv[0], (xmlChar*)"elem2") == 0);
+  ck_assert(expr->next->argv[1] == 0);
   ck_assert(expr->next->next == 0);
 
   xQSearchExpr_free(expr);
@@ -87,8 +90,9 @@ START_TEST (test_wildcard_selector)
   ck_assert(expr->next != 0);
   
   ck_assert(expr->next->operation == _xQ_findDescendantsByName);
-  ck_assert(expr->next->argc == 1);
+  ck_assert(expr->next->argc == 2);
   ck_assert(xmlStrcmp(expr->next->argv[0], (xmlChar*)"elem") == 0);
+  ck_assert(expr->next->argv[1] == 0);
   ck_assert(expr->next->next == 0);
 
   xQSearchExpr_free(expr);
@@ -107,13 +111,15 @@ START_TEST (test_plus_combinator)
   
   ck_assert(status == XQ_OK);
   ck_assert(expr->operation == _xQ_findDescendantsByName);
-  ck_assert(expr->argc == 1);
+  ck_assert(expr->argc == 2);
   ck_assert(xmlStrcmp(expr->argv[0], (xmlChar*)"elem1") == 0);
+  ck_assert(expr->argv[1] == 0);
   ck_assert(expr->next != 0);
   
   ck_assert(expr->next->operation == _xQ_findNextSiblingByName);
-  ck_assert(expr->next->argc == 1);
+  ck_assert(expr->next->argc == 2);
   ck_assert(xmlStrcmp(expr->next->argv[0], (xmlChar*)"elem2") == 0);
+  ck_assert(expr->next->argv[1] == 0);
   ck_assert(expr->next->next == 0);
 
   xQSearchExpr_free(expr);
@@ -132,13 +138,15 @@ START_TEST (test_gt_combinator)
   
   ck_assert(status == XQ_OK);
   ck_assert(expr->operation == _xQ_findDescendantsByName);
-  ck_assert(expr->argc == 1);
+  ck_assert(expr->argc == 2);
   ck_assert(xmlStrcmp(expr->argv[0], (xmlChar*)"elem1") == 0);
+  ck_assert(expr->argv[1] == 0);
   ck_assert(expr->next != 0);
   
   ck_assert(expr->next->operation == _xQ_findChildrenByName);
-  ck_assert(expr->next->argc == 1);
+  ck_assert(expr->next->argc == 2);
   ck_assert(xmlStrcmp(expr->next->argv[0], (xmlChar*)"elem2") == 0);
+  ck_assert(expr->next->argv[1] == 0);
   ck_assert(expr->next->next == 0);
 
   xQSearchExpr_free(expr);
@@ -158,8 +166,9 @@ START_TEST (test_single_attr)
   
   ck_assert(status == XQ_OK);
   ck_assert(expr->operation == _xQ_findDescendantsByName);
-  ck_assert(expr->argc == 1);
+  ck_assert(expr->argc == 2);
   ck_assert(xmlStrcmp(expr->argv[0], (xmlChar*)"elem1") == 0);
+  ck_assert(expr->argv[1] == 0);
   ck_assert(expr->next != 0);
   
   ck_assert(expr->next->operation == _xQ_filterAttributeEquals);
@@ -176,8 +185,9 @@ START_TEST (test_single_attr)
   
   ck_assert(status == XQ_OK);
   ck_assert(expr->operation == _xQ_findDescendantsByName);
-  ck_assert(expr->argc == 1);
+  ck_assert(expr->argc == 2);
   ck_assert(xmlStrcmp(expr->argv[0], (xmlChar*)"elem1") == 0);
+  ck_assert(expr->argv[1] == 0);
   ck_assert(expr->next != 0);
   
   ck_assert(expr->next->operation == _xQ_filterAttributeEquals);
@@ -203,8 +213,9 @@ START_TEST (test_single_attr_combinator)
   
   ck_assert(status == XQ_OK);
   ck_assert(expr->operation == _xQ_findDescendantsByName);
-  ck_assert(expr->argc == 1);
+  ck_assert(expr->argc == 2);
   ck_assert(xmlStrcmp(expr->argv[0], (xmlChar*)"elem1") == 0);
+  ck_assert(expr->argv[1] == 0);
   ck_assert(expr->next != 0);
   
   ck_assert(expr->next->operation == _xQ_filterAttributeEquals);
@@ -214,8 +225,9 @@ START_TEST (test_single_attr_combinator)
   ck_assert(expr->next->next != 0);
 
   ck_assert(expr->next->next->operation == _xQ_findNextSiblingByName);
-  ck_assert(expr->next->next->argc == 1);
+  ck_assert(expr->next->next->argc == 2);
   ck_assert(xmlStrcmp(expr->next->next->argv[0], (xmlChar*)"elem2") == 0);
+  ck_assert(expr->next->next->argv[1] == 0);
   ck_assert(expr->next->next->next == 0);
 
   xQSearchExpr_free(expr);
@@ -234,8 +246,9 @@ START_TEST (test_dual_attr)
   
   ck_assert(status == XQ_OK);
   ck_assert(expr->operation == _xQ_findDescendantsByName);
-  ck_assert(expr->argc == 1);
+  ck_assert(expr->argc == 2);
   ck_assert(xmlStrcmp(expr->argv[0], (xmlChar*)"elem1") == 0);
+  ck_assert(expr->argv[1] == 0);
   ck_assert(expr->next != 0);
   
   ck_assert(expr->next->operation == _xQ_filterAttributeEquals);

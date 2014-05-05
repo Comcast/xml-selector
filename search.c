@@ -7,6 +7,8 @@
 
 #include <string.h>
 
+const xmlChar* XQ_EMPTY_NAMESPACE = (xmlChar*)"";
+
 // local (private) routines and data types
 typedef enum {
   XQ_TT_NONE = 0,
@@ -23,13 +25,13 @@ typedef struct _xQToken {
   xQStatusCode lastStatus;
 } xQToken;
 
-typedef xQStatusCode (*xQSearchExprCtorPtr)(xQSearchExpr**, xmlChar*);
+typedef xQStatusCode (*xQSearchExprCtorPtr)(xQSearchExpr**, xmlChar*, xmlChar*);
 
 static xQStatusCode xQSearchExpr_alloc_init_copy(xQSearchExpr** self);
 static xQStatusCode xQSearchExpr_alloc_init_allDescendants(xQSearchExpr** self);
-static xQStatusCode xQSearchExpr_alloc_init_searchDescendants(xQSearchExpr** self, xmlChar* name);
-static xQStatusCode xQSearchExpr_alloc_init_searchImmediate(xQSearchExpr** self, xmlChar* name);
-static xQStatusCode xQSearchExpr_alloc_init_searchNextSibling(xQSearchExpr** self, xmlChar* name);
+static xQStatusCode xQSearchExpr_alloc_init_searchDescendants(xQSearchExpr** self, xmlChar* name, xmlChar* ns);
+static xQStatusCode xQSearchExpr_alloc_init_searchImmediate(xQSearchExpr** self, xmlChar* name, xmlChar* ns);
+static xQStatusCode xQSearchExpr_alloc_init_searchNextSibling(xQSearchExpr** self, xmlChar* name, xmlChar* ns);
 static xQStatusCode xQSearchExpr_alloc_init_filterAttrEquals(xQSearchExpr** self, xmlChar* name, xmlChar* value);
 static xQStatusCode xQSearchExpr_parseSelector(xQSearchExpr** expr, xQToken* tok);
 static XQINLINE xQStatusCode xQSearchExpr_parseSingleSelector(xQSearchExpr** expr, xQToken* tok);
@@ -496,9 +498,7 @@ static XQINLINE xQStatusCode xQSearchExpr_parseSimpleSelector(xQSearchExpr** exp
   if (status == XQ_OK && isWildcard)
     status = xQSearchExpr_alloc_init_allDescendants(expr);
   else if (status == XQ_OK)
-    status = ctor(expr, name);
-  
-  // TODO: do something with nsPrefix
+    status = ctor(expr, name, nsPrefix);
   
   // | element_name attribs
   if (status == XQ_OK)
@@ -679,7 +679,7 @@ static xQStatusCode xQSearchExpr_alloc_init_allDescendants(xQSearchExpr** self) 
  *
  * Returns a pointer to the new instance or 0 on error
  */
-static xQStatusCode xQSearchExpr_alloc_init_searchDescendants(xQSearchExpr** self, xmlChar* name) {
+static xQStatusCode xQSearchExpr_alloc_init_searchDescendants(xQSearchExpr** self, xmlChar* name, xmlChar* ns) {
   
   *self = (xQSearchExpr*) malloc(sizeof(xQSearchExpr));
   if (!(*self)) {
@@ -687,10 +687,11 @@ static xQStatusCode xQSearchExpr_alloc_init_searchDescendants(xQSearchExpr** sel
     return XQ_OUT_OF_MEMORY;
   }
   
-  (*self)->argv = (xmlChar**) malloc(sizeof(xmlChar*));
+  (*self)->argv = (xmlChar**) malloc(sizeof(xmlChar*) * 2);
   if ((*self)->argv) {
-    (*self)->argc = 1;
+    (*self)->argc = 2;
     (*self)->argv[0] = name;
+    (*self)->argv[1] = ns;
     (*self)->operation = _xQ_findDescendantsByName;
     (*self)->next = 0;
   } else {
@@ -708,7 +709,7 @@ static xQStatusCode xQSearchExpr_alloc_init_searchDescendants(xQSearchExpr** sel
  *
  * Returns a pointer to the new instance or 0 on error
  */
-static xQStatusCode xQSearchExpr_alloc_init_searchImmediate(xQSearchExpr** self, xmlChar* name) {
+static xQStatusCode xQSearchExpr_alloc_init_searchImmediate(xQSearchExpr** self, xmlChar* name, xmlChar* ns) {
   
   *self = (xQSearchExpr*) malloc(sizeof(xQSearchExpr));
   if (!(*self)) {
@@ -716,10 +717,11 @@ static xQStatusCode xQSearchExpr_alloc_init_searchImmediate(xQSearchExpr** self,
     return XQ_OUT_OF_MEMORY;
   }
   
-  (*self)->argv = (xmlChar**) malloc(sizeof(xmlChar*));
+  (*self)->argv = (xmlChar**) malloc(sizeof(xmlChar*) * 2);
   if ((*self)->argv) {
-    (*self)->argc = 1;
+    (*self)->argc = 2;
     (*self)->argv[0] = name;
+    (*self)->argv[1] = ns;
     (*self)->operation = _xQ_findChildrenByName;
     (*self)->next = 0;
   } else {
@@ -737,7 +739,7 @@ static xQStatusCode xQSearchExpr_alloc_init_searchImmediate(xQSearchExpr** self,
  *
  * Returns a pointer to the new instance or 0 on error
  */
-static xQStatusCode xQSearchExpr_alloc_init_searchNextSibling(xQSearchExpr** self, xmlChar* name) {
+static xQStatusCode xQSearchExpr_alloc_init_searchNextSibling(xQSearchExpr** self, xmlChar* name, xmlChar* ns) {
   
   *self = (xQSearchExpr*) malloc(sizeof(xQSearchExpr));
   if (!(*self)) {
@@ -745,10 +747,11 @@ static xQStatusCode xQSearchExpr_alloc_init_searchNextSibling(xQSearchExpr** sel
     return XQ_OUT_OF_MEMORY;
   }
   
-  (*self)->argv = (xmlChar**) malloc(sizeof(xmlChar*));
+  (*self)->argv = (xmlChar**) malloc(sizeof(xmlChar*) * 2);
   if ((*self)->argv) {
-    (*self)->argc = 1;
+    (*self)->argc = 2;
     (*self)->argv[0] = name;
+    (*self)->argv[1] = ns;
     (*self)->operation = _xQ_findNextSiblingByName;
     (*self)->next = 0;
   } else {

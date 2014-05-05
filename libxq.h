@@ -98,6 +98,8 @@ xQStatusCode _xQ_filterAttributeEquals(xQ* context, xmlChar** args, xmlNodePtr n
 xQStatusCode _xQ_addToOutput(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList);
 xQStatusCode _xQ_filterByName(xQ* context, xmlChar** args, xmlNodePtr node, xQNodeList* outList);
 
+extern const xmlChar* XQ_EMPTY_NAMESPACE;
+
 #ifdef __cplusplus
 }
 #endif
