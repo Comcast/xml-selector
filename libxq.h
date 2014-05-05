@@ -74,6 +74,8 @@ xmlChar* xQ_getAttr(xQ* self, const char* name);
 xmlChar* xQ_getXml(xQ* self);
 xQStatusCode xQ_first(xQ* self, xQ** result);
 xQStatusCode xQ_last(xQ* self, xQ** result);
+xQStatusCode xQ_addNamespace(xQ* self, const xmlChar* prefix, const xmlChar* uri);
+const xmlChar* xQ_namespaceForPrefix(xQ* self, const xmlChar* prefix);
 
 
 

@@ -48,6 +48,27 @@ START_TEST (test_single_selector)
 END_TEST
 
 /**
+ * Test a namespace selector
+ */
+START_TEST (test_ns_selector)
+{
+  xQSearchExpr* expr;
+  xQStatusCode status;
+  
+  status = xQSearchExpr_alloc_init(&expr, (xmlChar*)"ns:elem");
+  
+  ck_assert(status == XQ_OK);
+  ck_assert(expr->operation == _xQ_findDescendantsByName);
+  ck_assert(expr->argc == 2);
+  ck_assert(xmlStrcmp(expr->argv[0], (xmlChar*)"elem") == 0);
+  ck_assert(xmlStrcmp(expr->argv[1], (xmlChar*)"ns") == 0);
+  ck_assert(expr->next == 0);
+  
+  xQSearchExpr_free(expr);
+}
+END_TEST
+
+/**
  * Test a dual selector
  */
 START_TEST (test_dual_selector)
@@ -68,6 +89,33 @@ START_TEST (test_dual_selector)
   ck_assert(expr->next->argc == 2);
   ck_assert(xmlStrcmp(expr->next->argv[0], (xmlChar*)"elem2") == 0);
   ck_assert(expr->next->argv[1] == 0);
+  ck_assert(expr->next->next == 0);
+
+  xQSearchExpr_free(expr);
+}
+END_TEST
+
+/**
+ * Test a dual selector with namespaces
+ */
+START_TEST (test_dual_ns_selector)
+{
+  xQSearchExpr* expr;
+  xQStatusCode status;
+  
+  status = xQSearchExpr_alloc_init(&expr, (xmlChar*)"nsA:elem1 nsB:elem2");
+  
+  ck_assert(status == XQ_OK);
+  ck_assert(expr->operation == _xQ_findDescendantsByName);
+  ck_assert(expr->argc == 2);
+  ck_assert(xmlStrcmp(expr->argv[0], (xmlChar*)"elem1") == 0);
+  ck_assert(xmlStrcmp(expr->argv[1], (xmlChar*)"nsA") == 0);
+  ck_assert(expr->next != 0);
+  
+  ck_assert(expr->next->operation == _xQ_findDescendantsByName);
+  ck_assert(expr->next->argc == 2);
+  ck_assert(xmlStrcmp(expr->next->argv[0], (xmlChar*)"elem2") == 0);
+  ck_assert(xmlStrcmp(expr->next->argv[1], (xmlChar*)"nsB") == 0);
   ck_assert(expr->next->next == 0);
 
   xQSearchExpr_free(expr);
@@ -327,11 +375,13 @@ END_TEST
  * Test suite
  */
 Suite* search_suite() {
-  Suite* s = suite_create("xQ");
+  Suite* s = suite_create("xQ search");
   
   singleTestCase(s, tc_empty, "empty", test_empty_selector);
   singleTestCase(s, tc_single, "single", test_single_selector);
+  singleTestCase(s, tc_ns_single, "namespace", test_ns_selector);
   singleTestCase(s, tc_dual, "dual", test_dual_selector);
+  singleTestCase(s, tc_ns_dual, "dual namespace", test_dual_ns_selector);
   singleTestCase(s, tc_wildcard, "wildcard", test_wildcard_selector);
   
   singleTestCase(s, tc_plus_combi, "+ combinator", test_plus_combinator);

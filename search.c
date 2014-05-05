@@ -541,6 +541,9 @@ static XQINLINE xQStatusCode xQSearchExpr_parseElementName(xQToken* tok, xmlChar
         *name = xmlStrndup(tok->content, tok->length);
       }
       
+      if (status == XQ_OK)
+        nextToken(tok);
+
       if (!(*name))
         status = XQ_OUT_OF_MEMORY;
     }

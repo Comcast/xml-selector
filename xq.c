@@ -1172,6 +1172,45 @@ xQStatusCode xQ_last(xQ* self, xQ** result) {
 }
 
 /**
+ * Associates a new namespace prefix with the given URI. Any existing
+ * association for the same prefix is overwritten.
+ *
+ * Returns 0 (XQ_OK) on success, an error code otherwise
+ */
+xQStatusCode xQ_addNamespace(xQ* self, const xmlChar* prefix, const xmlChar* uri) {
+  xmlChar* uriCopy = 0;
+  
+  if (!self->nsPrefixes)
+    self->nsPrefixes = xmlHashCreate(8);
+  
+  if (!self->nsPrefixes)
+    return XQ_OUT_OF_MEMORY;
+  
+  uriCopy = xmlStrdup(uri);
+  if (!uriCopy)
+    return XQ_OUT_OF_MEMORY;
+  
+  if (xmlHashUpdateEntry(self->nsPrefixes, prefix, (void*)uriCopy, nsItemDestroy) != 0) {
+    xmlFree(uriCopy);
+    return XQ_OUT_OF_MEMORY;
+  }
+  
+  return XQ_OK;
+}
+
+/**
+ * Looks up the namespace URI associated with the given prefix.
+ *
+ * Returns the namespace URI string if found, otherwise NULL.
+ */
+const xmlChar* xQ_namespaceForPrefix(xQ* self, const xmlChar* prefix) {
+  if (!self->nsPrefixes)
+    return 0;
+  
+  return (const xmlChar*)xmlHashLookup(self->nsPrefixes, prefix);
+}
+
+/**
  * Performs an item copy operation for the ns prefix table
  */
 static void* nsItemCopy(void* payload, xmlChar* name) {
