@@ -8,6 +8,9 @@
 #include <string.h>
 
 // local (private) routines
+static void* nsItemCopy(void* payload, xmlChar* name);
+static void nsItemDestroy(void* payload, xmlChar* name);
+static xQStatusCode xQ_alloc_initResult(xQ** self, xQ* other);
 
 /**
  * Allocate and initialize a new empty xQ
@@ -159,6 +162,7 @@ xQStatusCode xQ_alloc_initNodeList(xQ** self, xQNodeList* list) {
     return XQ_OUT_OF_MEMORY;
   
   (*self)->document = list->size > 0 ? list->list[0]->doc : 0;
+  (*self)->nsPrefixes = 0;
   
   status = xQNodeList_init(&((*self)->context), list->size);
   
@@ -166,6 +170,31 @@ xQStatusCode xQ_alloc_initNodeList(xQ** self, xQNodeList* list) {
     status = xQNodeList_assign(&((*self)->context), list);
 
   if (XQ_OK != status) {
+    xQ_free(*self, 1);
+    *self = 0;
+  }
+  
+  return status;
+}
+
+/**
+ * Allocate and initialize a new xQ that can be used for a search result
+ * based on `other`.
+ *
+ * Returns a 0 (XQ_OK) on success, an error code otherwise
+ */
+static xQStatusCode xQ_alloc_initResult(xQ** self, xQ* other) {
+  xQStatusCode status = XQ_OK;
+
+  status = xQ_alloc_init(self);
+
+  if (status == XQ_OK)
+    (*self)->document = other->document;
+  
+  if (status == XQ_OK && other->nsPrefixes)
+    status = (((*self)->nsPrefixes = xmlHashCopy(other->nsPrefixes, nsItemCopy)) != 0) ? XQ_OK : XQ_OUT_OF_MEMORY;
+  
+  if (status != XQ_OK) {
     xQ_free(*self, 1);
     *self = 0;
   }
@@ -181,6 +210,7 @@ xQStatusCode xQ_alloc_initNodeList(xQ** self, xQNodeList* list) {
  */
 xQStatusCode xQ_init(xQ* self) {
   self->document = 0;
+  self->nsPrefixes = 0;
   return xQNodeList_init(&(self->context), 8);
 }
 
@@ -193,6 +223,8 @@ xQStatusCode xQ_init(xQ* self) {
 xQStatusCode xQ_free(xQ* self, int freeXQ) {
   if (self)
     xQNodeList_free(&(self->context), 0);
+  if (self && self->nsPrefixes)
+    xmlHashFree(self->nsPrefixes, nsItemDestroy);
   if (freeXQ)
     free(self);
   
@@ -244,16 +276,11 @@ xQStatusCode xQ_children(xQ* self, const xmlChar* selector, xQ** result) {
   if (retcode != XQ_OK)
     return retcode;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
+  retcode = xQ_alloc_initResult(result, self);
 
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
-  
   if (retcode == XQ_OK)
     retcode = xQNodeList_init(&tmpList, self->context.size);
-  
+
   for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
     
     xmlNodePtr cur = self->context.list[i]->children;
@@ -311,13 +338,8 @@ xQStatusCode xQ_closest(xQ* self, const xmlChar* selector, xQ** result) {
   if (retcode != XQ_OK)
     return retcode;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
+  retcode = xQ_alloc_initResult(result, self);
 
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
-  
   if (retcode == XQ_OK)
     retcode = xQNodeList_init(&tmpList, self->context.size);
   
@@ -371,14 +393,7 @@ xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result) {
   if (retcode != XQ_OK)
     return retcode;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
-
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
-  else
-    xQ_clear(*result);
+  retcode = xQ_alloc_initResult(result, self);
   
   for (i = 0; retcode == XQ_OK && i < self->context.size; i++)
     retcode = xQSearchExpr_eval(expr, self, self->context.list[i], &((*result)->context));
@@ -414,12 +429,7 @@ xQStatusCode xQ_filter(xQ* self, const xmlChar* selector, xQ** result) {
   if (retcode != XQ_OK)
     return retcode;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
-
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
+  retcode = xQ_alloc_initResult(result, self);
   
   if (retcode == XQ_OK)
     retcode = xQNodeList_init(&tmpList, self->context.size);
@@ -469,12 +479,7 @@ xQStatusCode xQ_next(xQ* self, const xmlChar* selector, xQ** result) {
   if (retcode != XQ_OK)
     return retcode;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
-
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
+  retcode = xQ_alloc_initResult(result, self);
   
   if (retcode == XQ_OK)
     retcode = xQNodeList_init(&tmpList, self->context.size);
@@ -535,12 +540,7 @@ xQStatusCode xQ_nextAll(xQ* self, const xmlChar* selector, xQ** result) {
   if (retcode != XQ_OK)
     return retcode;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
-
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
+  retcode = xQ_alloc_initResult(result, self);
   
   if (retcode == XQ_OK)
     retcode = xQNodeList_init(&tmpList, self->context.size);
@@ -602,12 +602,7 @@ xQStatusCode xQ_nextUntil(xQ* self, const xmlChar* selector, xQ** result) {
   if (retcode != XQ_OK)
     return retcode;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
-
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
+  retcode = xQ_alloc_initResult(result, self);
   
   if (retcode == XQ_OK)
     retcode = xQNodeList_init(&tmpList, self->context.size);
@@ -663,12 +658,7 @@ xQStatusCode xQ_not(xQ* self, const xmlChar* selector, xQ** result) {
   if (retcode != XQ_OK)
     return retcode;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
-
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
+  retcode = xQ_alloc_initResult(result, self);
   
   if (retcode == XQ_OK)
     retcode = xQNodeList_init(&tmpList, self->context.size);
@@ -720,12 +710,7 @@ xQStatusCode xQ_parent(xQ* self, const xmlChar* selector, xQ** result) {
   if (retcode != XQ_OK)
     return retcode;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
-
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
+  retcode = xQ_alloc_initResult(result, self);
   
   if (retcode == XQ_OK)
     retcode = xQNodeList_init(&tmpList, self->context.size);
@@ -786,12 +771,7 @@ xQStatusCode xQ_parents(xQ* self, const xmlChar* selector, xQ** result) {
   if (retcode != XQ_OK)
     return retcode;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
-
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
+  retcode = xQ_alloc_initResult(result, self);
   
   if (retcode == XQ_OK)
     retcode = xQNodeList_init(&tmpList, self->context.size);
@@ -853,12 +833,7 @@ xQStatusCode xQ_parentsUntil(xQ* self, const xmlChar* selector, xQ** result) {
   if (retcode != XQ_OK)
     return retcode;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
-
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
+  retcode = xQ_alloc_initResult(result, self);
   
   if (retcode == XQ_OK)
     retcode = xQNodeList_init(&tmpList, self->context.size);
@@ -917,12 +892,7 @@ xQStatusCode xQ_prev(xQ* self, const xmlChar* selector, xQ** result) {
   if (retcode != XQ_OK)
     return retcode;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
-
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
+  retcode = xQ_alloc_initResult(result, self);
   
   if (retcode == XQ_OK)
     retcode = xQNodeList_init(&tmpList, self->context.size);
@@ -983,12 +953,7 @@ xQStatusCode xQ_prevAll(xQ* self, const xmlChar* selector, xQ** result) {
   if (retcode != XQ_OK)
     return retcode;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
-
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
+  retcode = xQ_alloc_initResult(result, self);
   
   if (retcode == XQ_OK)
     retcode = xQNodeList_init(&tmpList, self->context.size);
@@ -1050,12 +1015,7 @@ xQStatusCode xQ_prevUntil(xQ* self, const xmlChar* selector, xQ** result) {
   if (retcode != XQ_OK)
     return retcode;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
-
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
+  retcode = xQ_alloc_initResult(result, self);
   
   if (retcode == XQ_OK)
     retcode = xQNodeList_init(&tmpList, self->context.size);
@@ -1172,12 +1132,7 @@ xQStatusCode xQ_first(xQ* self, xQ** result) {
   
   *result = 0;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
-
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
+  retcode = xQ_alloc_initResult(result, self);
 
   if (retcode == XQ_OK && self->context.size)
     xQNodeList_push(&((*result)->context), self->context.list[0]);
@@ -1203,12 +1158,7 @@ xQStatusCode xQ_last(xQ* self, xQ** result) {
   
   *result = 0;
   
-  retcode = xQ_alloc_init(result);
-  if (retcode == XQ_OK)
-    (*result)->document = self->document;
-
-  if (!*result)
-    retcode = XQ_OUT_OF_MEMORY;
+  retcode = xQ_alloc_initResult(result, self);
 
   if (retcode == XQ_OK && self->context.size)
     xQNodeList_push(&((*result)->context), self->context.list[(self->context.size)-1]);
@@ -1219,4 +1169,18 @@ xQStatusCode xQ_last(xQ* self, xQ** result) {
   }
   
   return retcode;
+}
+
+/**
+ * Performs an item copy operation for the ns prefix table
+ */
+static void* nsItemCopy(void* payload, xmlChar* name) {
+  return (void*)xmlStrdup((xmlChar*)payload);
+}
+
+/**
+ * Performs an item destroy operation for the ns prefix table
+ */
+static void nsItemDestroy(void* payload, xmlChar* name) {
+  xmlFree(payload);
 }

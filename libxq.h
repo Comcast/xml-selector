@@ -43,6 +43,7 @@ xQStatusCode xQNodeList_assign(xQNodeList* toList, xQNodeList* fromList);
 typedef struct _xQ {
   xmlDocPtr document;
   xQNodeList context;
+  xmlHashTablePtr nsPrefixes;
 } xQ;
 
 xQStatusCode xQ_alloc_init(xQ** self);
