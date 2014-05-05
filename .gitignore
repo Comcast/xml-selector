@@ -35,3 +35,4 @@ tests/*.trs
 tests/Makefile
 tests/Makefile.in
 tests/check_search
+tests/check_xq
