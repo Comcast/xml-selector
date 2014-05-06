@@ -811,7 +811,8 @@ xQStatusCode xQSearchExpr_free(xQSearchExpr* self) {
 
   if (self->argv)
     for (i = 0; i < self->argc; i++)
-      xmlFree(self->argv[i]);
+      if (self->argv[i] && self->argv[i] != XQ_EMPTY_NAMESPACE)
+        xmlFree(self->argv[i]);
   
   if (self->next)
     return xQSearchExpr_free(self->next);
