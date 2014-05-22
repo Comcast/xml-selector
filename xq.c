@@ -315,6 +315,186 @@ xQStatusCode xQ_children(xQ* self, const xmlChar* selector, xQ** result) {
   return retcode;
 }
 
+// below are macros of code used in the slight variations of traversal routines
+
+/**
+ * Initialize a search expression and an xQ result
+ */
+#define setupSearch(self, expr, selector, result, retcode) \
+  *result = 0; \
+  \
+  retcode = xQSearchExpr_alloc_init(&expr, selector); \
+  if (retcode != XQ_OK) \
+    return retcode; \
+  \
+  retcode = xQ_alloc_initResult(result, self);
+
+/**
+ * Initialize a filter search expression and an xQ result for filter
+ * operations
+ */
+#define setupFilter(self, expr, selector, result, retcode) \
+  *result = 0; \
+  \
+  retcode = xQSearchExpr_alloc_initFilter(&expr, selector); \
+  if (retcode != XQ_OK) \
+    return retcode; \
+  \
+  retcode = xQ_alloc_initResult(result, self);
+
+/**
+ * Initialize an optional filter search expression and an xQ result
+ */
+#define setupOptionalFilter(self, expr, selector, result, retcode) \
+  expr = 0; \
+  *result = 0; \
+  \
+  retcode = selector ? xQSearchExpr_alloc_initFilter(&expr, selector) : XQ_OK; \
+  if (retcode != XQ_OK) \
+    return retcode; \
+  \
+  retcode = xQ_alloc_initResult(result, self);
+
+/**
+ * Initialize a temporary node list
+ */
+#define setupTempList(self, tmpList, retcode) \
+  tmpList.list = 0; \
+  \
+  if (retcode == XQ_OK) \
+    retcode = xQNodeList_init(&tmpList, self->context.size);
+
+/**
+ * Cleanup after a search operation
+ */
+#define completeSearch(result, expr, retcode) \
+  if (retcode != XQ_OK) { \
+    xQ_free(*result, 1); \
+    *result = 0; \
+  } \
+  \
+  xQSearchExpr_free(expr);
+
+/**
+ * Cleanup after a search operation that includes a temporary node list
+ */
+#define completeSearchTempList(result, expr, tmpList, retcode) \
+  completeSearch(result, expr, retcode) \
+  xQNodeList_free(&tmpList, 0);
+
+
+/**
+ * Complete traversal implementation for functions that traverse a single
+ * step in one direction and apply an optional filter
+ */
+#define stepAxisOptionallyFilter(self, selector, result, axis, retcode) \
+  xQSearchExpr* expr; \
+  xQNodeList tmpList; \
+  xmlNodePtr match; \
+  unsigned int i; \
+  \
+  setupOptionalFilter(self, expr, selector, result, retcode); \
+  \
+  setupTempList(self, tmpList, retcode); \
+  \
+  for (i = 0; retcode == XQ_OK && i < self->context.size; i++) { \
+  \
+    match = self->context.list[i]->axis; \
+  \
+    if (match) { \
+  \
+      if (expr) { \
+        xQNodeList_clear(&tmpList); \
+  \
+        retcode = xQSearchExpr_eval(expr, self, match, &tmpList); \
+  \
+        match = (retcode == XQ_OK && tmpList.size == 1 && tmpList.list[0] == match) ? match : 0; \
+      } \
+  \
+      if (match) \
+        xQNodeList_push(&((*result)->context), match); \
+  \
+    } \
+  } \
+  \
+  completeSearchTempList(result, expr, tmpList, retcode);
+
+/**
+ * Complete traversal implementation for functions that traverse along a
+ * single axis collecting all elements and optionally applying a filter
+ */
+#define traverseAxisOptionallyFilter(self, selector, result, axis, retcode) \
+  xQSearchExpr* expr; \
+  xQNodeList tmpList; \
+  xmlNodePtr cur, match; \
+  unsigned int i; \
+  \
+  setupOptionalFilter(self, expr, selector, result, retcode); \
+  \
+  setupTempList(self, tmpList, retcode); \
+  \
+  for (i = 0; retcode == XQ_OK && i < self->context.size; i++) { \
+  \
+    cur = self->context.list[i]->axis && XML_ELEMENT_NODE == self->context.list[i]->axis->type ? self->context.list[i]->axis : 0; \
+  \
+    while (cur && retcode == XQ_OK) { \
+  \
+      match = cur; \
+  \
+      if (expr) { \
+        xQNodeList_clear(&tmpList); \
+  \
+        retcode = xQSearchExpr_eval(expr, self, cur, &tmpList); \
+  \
+        match = (retcode == XQ_OK && tmpList.size == 1 && tmpList.list[0] == cur) ? cur : 0; \
+      } \
+  \
+      if (match) \
+        xQNodeList_push(&((*result)->context), match); \
+  \
+      cur = cur->axis && XML_ELEMENT_NODE == cur->axis->type ? cur->axis : 0 ; \
+    } \
+  } \
+  \
+  completeSearchTempList(result, expr, tmpList, retcode);
+
+/**
+ * Complete traversal implementation for functions that traverse along a
+ * single axis until an element matching the supplied filter is found.
+ */
+#define traverseAxisUntil(self, selector, result, axis, retcode) \
+  xQSearchExpr* expr; \
+  xQNodeList tmpList; \
+  xmlNodePtr cur; \
+  unsigned int i, failed; \
+  \
+  setupFilter(self, expr, selector, result, retcode); \
+  \
+  setupTempList(self, tmpList, retcode); \
+  \
+  for (i = 0; retcode == XQ_OK && i < self->context.size; i++) { \
+    xQNodeList_clear(&tmpList); \
+  \
+    cur = self->context.list[i]->axis && XML_ELEMENT_NODE == self->context.list[i]->axis->type ? self->context.list[i]->axis : 0; \
+    failed = 0; \
+  \
+    while (cur && retcode == XQ_OK && (!failed)) { \
+      retcode = xQSearchExpr_eval(expr, self, cur, &tmpList); \
+  \
+      if (retcode == XQ_OK && (tmpList.size != 1 || tmpList.list[0] != cur)) \
+        xQNodeList_push(&((*result)->context), cur); \
+      else if (retcode == XQ_OK) \
+        failed = 1; \
+  \
+      cur = cur->axis && XML_ELEMENT_NODE == cur->axis->type ? cur->axis : 0; \
+    } \
+  } \
+  \
+  completeSearchTempList(result, expr, tmpList, retcode);
+
+
+// traversal routines follow
+
 /**
  * For each item in the current context, travel up the dom until an
  * element matching the supplied selector is found. The found elements,
@@ -331,18 +511,10 @@ xQStatusCode xQ_closest(xQ* self, const xmlChar* selector, xQ** result) {
   xmlNodePtr cur, match;
   unsigned int i;
   
-  *result = 0;
-  tmpList.list = 0;
+  setupFilter(self, expr, selector, result, retcode);
   
-  retcode = xQSearchExpr_alloc_initFilter(&expr, selector);
-  if (retcode != XQ_OK)
-    return retcode;
-  
-  retcode = xQ_alloc_initResult(result, self);
+  setupTempList(self, tmpList, retcode);
 
-  if (retcode == XQ_OK)
-    retcode = xQNodeList_init(&tmpList, self->context.size);
-  
   for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
     
     xmlNodePtr cur = self->context.list[i];
@@ -363,13 +535,7 @@ xQStatusCode xQ_closest(xQ* self, const xmlChar* selector, xQ** result) {
     }
   }
   
-  if (retcode != XQ_OK) {
-    xQ_free(*result, 1);
-    *result = 0;
-  }
-  
-  xQNodeList_free(&tmpList, 0);
-  xQSearchExpr_free(expr);
+  completeSearchTempList(result, expr, tmpList, retcode);
 
   return retcode;
 }
@@ -387,23 +553,12 @@ xQStatusCode xQ_find(xQ* self, const xmlChar* selector, xQ** result) {
   xQSearchExpr* expr;
   unsigned int i;
   
-  *result = 0;
-  
-  retcode = xQSearchExpr_alloc_init(&expr, selector);
-  if (retcode != XQ_OK)
-    return retcode;
-  
-  retcode = xQ_alloc_initResult(result, self);
+  setupSearch(self, expr, selector, result, retcode);
   
   for (i = 0; retcode == XQ_OK && i < self->context.size; i++)
     retcode = xQSearchExpr_eval(expr, self, self->context.list[i], &((*result)->context));
   
-  if (retcode != XQ_OK) {
-    xQ_free(*result, 1);
-    *result = 0;
-  }
-  
-  xQSearchExpr_free(expr);
+  completeSearch(result, expr, retcode);
 
   return retcode;
 }
@@ -422,17 +577,9 @@ xQStatusCode xQ_filter(xQ* self, const xmlChar* selector, xQ** result) {
   xQNodeList tmpList;
   unsigned int i;
   
-  *result = 0;
-  tmpList.list = 0;
+  setupFilter(self, expr, selector, result, retcode);
   
-  retcode = xQSearchExpr_alloc_initFilter(&expr, selector);
-  if (retcode != XQ_OK)
-    return retcode;
-  
-  retcode = xQ_alloc_initResult(result, self);
-  
-  if (retcode == XQ_OK)
-    retcode = xQNodeList_init(&tmpList, self->context.size);
+  setupTempList(self, tmpList, retcode);
   
   for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
     xQNodeList_clear(&tmpList);
@@ -443,13 +590,7 @@ xQStatusCode xQ_filter(xQ* self, const xmlChar* selector, xQ** result) {
       xQNodeList_push(&((*result)->context), self->context.list[i]);
   }
   
-  if (retcode != XQ_OK) {
-    xQ_free(*result, 1);
-    *result = 0;
-  }
-  
-  xQNodeList_free(&tmpList, 0);
-  xQSearchExpr_free(expr);
+  completeSearchTempList(result, expr, tmpList, retcode);
 
   return retcode;
 }
@@ -466,51 +607,8 @@ xQStatusCode xQ_filter(xQ* self, const xmlChar* selector, xQ** result) {
  */
 xQStatusCode xQ_next(xQ* self, const xmlChar* selector, xQ** result) {
   xQStatusCode retcode = XQ_OK;
-  xQSearchExpr* expr;
-  xQNodeList tmpList;
-  xmlNodePtr match;
-  unsigned int i;
-  
-  expr = 0;
-  *result = 0;
-  tmpList.list = 0;
-  
-  retcode = selector ? xQSearchExpr_alloc_initFilter(&expr, selector) : XQ_OK;
-  if (retcode != XQ_OK)
-    return retcode;
-  
-  retcode = xQ_alloc_initResult(result, self);
-  
-  if (retcode == XQ_OK)
-    retcode = xQNodeList_init(&tmpList, self->context.size);
-  
-  for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
-    
-    match = self->context.list[i]->next;
-  
-    if (match) {
-      
-      if (expr) {
-        xQNodeList_clear(&tmpList);
-    
-        retcode = xQSearchExpr_eval(expr, self, match, &tmpList);
-    
-        match = (retcode == XQ_OK && tmpList.size == 1 && tmpList.list[0] == match) ? match : 0;
-      }
-      
-      if (match)
-        xQNodeList_push(&((*result)->context), match);
-    
-    }
-  }
-  
-  if (retcode != XQ_OK) {
-    xQ_free(*result, 1);
-    *result = 0;
-  }
-  
-  xQNodeList_free(&tmpList, 0);
-  xQSearchExpr_free(expr);
+
+  stepAxisOptionallyFilter(self, selector, result, next, retcode);
 
   return retcode;
 }
@@ -527,54 +625,8 @@ xQStatusCode xQ_next(xQ* self, const xmlChar* selector, xQ** result) {
  */
 xQStatusCode xQ_nextAll(xQ* self, const xmlChar* selector, xQ** result) {
   xQStatusCode retcode = XQ_OK;
-  xQSearchExpr* expr;
-  xQNodeList tmpList;
-  xmlNodePtr cur, match;
-  unsigned int i;
-  
-  expr = 0;
-  *result = 0;
-  tmpList.list = 0;
-  
-  retcode = selector ? xQSearchExpr_alloc_initFilter(&expr, selector) : XQ_OK;
-  if (retcode != XQ_OK)
-    return retcode;
-  
-  retcode = xQ_alloc_initResult(result, self);
-  
-  if (retcode == XQ_OK)
-    retcode = xQNodeList_init(&tmpList, self->context.size);
-  
-  for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
-    
-    cur = self->context.list[i]->next;
-  
-    while (cur && retcode == XQ_OK) {
-      
-      match = cur;
-      
-      if (expr) {
-        xQNodeList_clear(&tmpList);
-    
-        retcode = xQSearchExpr_eval(expr, self, cur, &tmpList);
-    
-        match = (retcode == XQ_OK && tmpList.size == 1 && tmpList.list[0] == cur) ? cur : 0;
-      }
-      
-      if (match)
-        xQNodeList_push(&((*result)->context), match);
-    
-      cur = cur->next;
-    }
-  }
-  
-  if (retcode != XQ_OK) {
-    xQ_free(*result, 1);
-    *result = 0;
-  }
-  
-  xQNodeList_free(&tmpList, 0);
-  xQSearchExpr_free(expr);
+
+  traverseAxisOptionallyFilter(self, selector, result, next, retcode);
 
   return retcode;
 }
@@ -590,48 +642,8 @@ xQStatusCode xQ_nextAll(xQ* self, const xmlChar* selector, xQ** result) {
  */
 xQStatusCode xQ_nextUntil(xQ* self, const xmlChar* selector, xQ** result) {
   xQStatusCode retcode = XQ_OK;
-  xQSearchExpr* expr;
-  xQNodeList tmpList;
-  xmlNodePtr cur;
-  unsigned int i, failed;
-  
-  *result = 0;
-  tmpList.list = 0;
-  
-  retcode = xQSearchExpr_alloc_initFilter(&expr, selector);
-  if (retcode != XQ_OK)
-    return retcode;
-  
-  retcode = xQ_alloc_initResult(result, self);
-  
-  if (retcode == XQ_OK)
-    retcode = xQNodeList_init(&tmpList, self->context.size);
-  
-  for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
-    xQNodeList_clear(&tmpList);
-    
-    cur = self->context.list[i]->next;
-    failed = 0;
-    
-    while (cur && retcode == XQ_OK && (!failed)) {
-      retcode = xQSearchExpr_eval(expr, self, cur, &tmpList);
-    
-      if (retcode == XQ_OK && (tmpList.size != 1 || tmpList.list[0] != cur))
-        xQNodeList_push(&((*result)->context), cur);
-      else if (retcode == XQ_OK)
-        failed = 1;
-      
-      cur = cur->next;
-    }
-  }
-  
-  if (retcode != XQ_OK) {
-    xQ_free(*result, 1);
-    *result = 0;
-  }
-  
-  xQNodeList_free(&tmpList, 0);
-  xQSearchExpr_free(expr);
+
+  traverseAxisUntil(self, selector, result, next, retcode);
 
   return retcode;
 }
@@ -651,17 +663,9 @@ xQStatusCode xQ_not(xQ* self, const xmlChar* selector, xQ** result) {
   xmlNodePtr cur;
   unsigned int i;
   
-  *result = 0;
-  tmpList.list = 0;
+  setupFilter(self, expr, selector, result, retcode);
   
-  retcode = xQSearchExpr_alloc_initFilter(&expr, selector);
-  if (retcode != XQ_OK)
-    return retcode;
-  
-  retcode = xQ_alloc_initResult(result, self);
-  
-  if (retcode == XQ_OK)
-    retcode = xQNodeList_init(&tmpList, self->context.size);
+  setupTempList(self, tmpList, retcode);
   
   for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
     xQNodeList_clear(&tmpList);
@@ -674,13 +678,7 @@ xQStatusCode xQ_not(xQ* self, const xmlChar* selector, xQ** result) {
       xQNodeList_push(&((*result)->context), cur);
   }
   
-  if (retcode != XQ_OK) {
-    xQ_free(*result, 1);
-    *result = 0;
-  }
-  
-  xQNodeList_free(&tmpList, 0);
-  xQSearchExpr_free(expr);
+  completeSearchTempList(result, expr, tmpList, retcode);
 
   return retcode;
 }
@@ -697,51 +695,8 @@ xQStatusCode xQ_not(xQ* self, const xmlChar* selector, xQ** result) {
  */
 xQStatusCode xQ_parent(xQ* self, const xmlChar* selector, xQ** result) {
   xQStatusCode retcode = XQ_OK;
-  xQSearchExpr* expr;
-  xQNodeList tmpList;
-  xmlNodePtr match;
-  unsigned int i;
-  
-  expr = 0;
-  *result = 0;
-  tmpList.list = 0;
-  
-  retcode = selector ? xQSearchExpr_alloc_initFilter(&expr, selector) : XQ_OK;
-  if (retcode != XQ_OK)
-    return retcode;
-  
-  retcode = xQ_alloc_initResult(result, self);
-  
-  if (retcode == XQ_OK)
-    retcode = xQNodeList_init(&tmpList, self->context.size);
-  
-  for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
-    
-    match = self->context.list[i]->parent;
-  
-    if (match) {
-      
-      if (expr) {
-        xQNodeList_clear(&tmpList);
-    
-        retcode = xQSearchExpr_eval(expr, self, match, &tmpList);
-    
-        match = (retcode == XQ_OK && tmpList.size == 1 && tmpList.list[0] == match) ? match : 0;
-      }
-      
-      if (match)
-        xQNodeList_push(&((*result)->context), match);
-    
-    }
-  }
-  
-  if (retcode != XQ_OK) {
-    xQ_free(*result, 1);
-    *result = 0;
-  }
-  
-  xQNodeList_free(&tmpList, 0);
-  xQSearchExpr_free(expr);
+
+  stepAxisOptionallyFilter(self, selector, result, parent, retcode);
 
   return retcode;
 }
@@ -758,54 +713,8 @@ xQStatusCode xQ_parent(xQ* self, const xmlChar* selector, xQ** result) {
  */
 xQStatusCode xQ_parents(xQ* self, const xmlChar* selector, xQ** result) {
   xQStatusCode retcode = XQ_OK;
-  xQSearchExpr* expr;
-  xQNodeList tmpList;
-  xmlNodePtr cur, match;
-  unsigned int i;
-  
-  expr = 0;
-  *result = 0;
-  tmpList.list = 0;
-  
-  retcode = selector ? xQSearchExpr_alloc_initFilter(&expr, selector) : XQ_OK;
-  if (retcode != XQ_OK)
-    return retcode;
-  
-  retcode = xQ_alloc_initResult(result, self);
-  
-  if (retcode == XQ_OK)
-    retcode = xQNodeList_init(&tmpList, self->context.size);
-  
-  for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
-    
-    cur = self->context.list[i]->parent && XML_ELEMENT_NODE == self->context.list[i]->parent->type ? self->context.list[i]->parent : 0;
-  
-    while (cur && retcode == XQ_OK) {
-      
-      match = cur;
-      
-      if (expr) {
-        xQNodeList_clear(&tmpList);
-    
-        retcode = xQSearchExpr_eval(expr, self, cur, &tmpList);
-    
-        match = (retcode == XQ_OK && tmpList.size == 1 && tmpList.list[0] == cur) ? cur : 0;
-      }
-      
-      if (match)
-        xQNodeList_push(&((*result)->context), match);
-    
-      cur = cur->parent && XML_ELEMENT_NODE == cur->parent->type ? cur->parent : 0;
-    }
-  }
-  
-  if (retcode != XQ_OK) {
-    xQ_free(*result, 1);
-    *result = 0;
-  }
-  
-  xQNodeList_free(&tmpList, 0);
-  xQSearchExpr_free(expr);
+
+  traverseAxisOptionallyFilter(self, selector, result, parent, retcode);
 
   return retcode;
 }
@@ -821,48 +730,8 @@ xQStatusCode xQ_parents(xQ* self, const xmlChar* selector, xQ** result) {
  */
 xQStatusCode xQ_parentsUntil(xQ* self, const xmlChar* selector, xQ** result) {
   xQStatusCode retcode = XQ_OK;
-  xQSearchExpr* expr;
-  xQNodeList tmpList;
-  xmlNodePtr cur;
-  unsigned int i, failed;
-  
-  *result = 0;
-  tmpList.list = 0;
-  
-  retcode = xQSearchExpr_alloc_initFilter(&expr, selector);
-  if (retcode != XQ_OK)
-    return retcode;
-  
-  retcode = xQ_alloc_initResult(result, self);
-  
-  if (retcode == XQ_OK)
-    retcode = xQNodeList_init(&tmpList, self->context.size);
-  
-  for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
-    xQNodeList_clear(&tmpList);
-    
-    cur = self->context.list[i]->parent && XML_ELEMENT_NODE == self->context.list[i]->parent->type ? self->context.list[i]->parent : 0;
-    failed = 0;
-    
-    while (cur && retcode == XQ_OK && (!failed)) {
-      retcode = xQSearchExpr_eval(expr, self, cur, &tmpList);
-    
-      if (retcode == XQ_OK && (tmpList.size != 1 || tmpList.list[0] != cur))
-        xQNodeList_push(&((*result)->context), cur);
-      else if (retcode == XQ_OK)
-        failed = 1;
-      
-      cur = cur->parent && XML_ELEMENT_NODE == cur->parent->type ? cur->parent : 0;
-    }
-  }
-  
-  if (retcode != XQ_OK) {
-    xQ_free(*result, 1);
-    *result = 0;
-  }
-  
-  xQNodeList_free(&tmpList, 0);
-  xQSearchExpr_free(expr);
+
+  traverseAxisUntil(self, selector, result, parent, retcode);
 
   return retcode;
 }
@@ -879,51 +748,8 @@ xQStatusCode xQ_parentsUntil(xQ* self, const xmlChar* selector, xQ** result) {
  */
 xQStatusCode xQ_prev(xQ* self, const xmlChar* selector, xQ** result) {
   xQStatusCode retcode = XQ_OK;
-  xQSearchExpr* expr;
-  xQNodeList tmpList;
-  xmlNodePtr match;
-  unsigned int i;
-  
-  expr = 0;
-  *result = 0;
-  tmpList.list = 0;
-  
-  retcode = selector ? xQSearchExpr_alloc_initFilter(&expr, selector) : XQ_OK;
-  if (retcode != XQ_OK)
-    return retcode;
-  
-  retcode = xQ_alloc_initResult(result, self);
-  
-  if (retcode == XQ_OK)
-    retcode = xQNodeList_init(&tmpList, self->context.size);
-  
-  for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
-    
-    match = self->context.list[i]->prev;
-  
-    if (match) {
-      
-      if (expr) {
-        xQNodeList_clear(&tmpList);
-    
-        retcode = xQSearchExpr_eval(expr, self, match, &tmpList);
-    
-        match = (retcode == XQ_OK && tmpList.size == 1 && tmpList.list[0] == match) ? match : 0;
-      }
-      
-      if (match)
-        xQNodeList_push(&((*result)->context), match);
-    
-    }
-  }
-  
-  if (retcode != XQ_OK) {
-    xQ_free(*result, 1);
-    *result = 0;
-  }
-  
-  xQNodeList_free(&tmpList, 0);
-  xQSearchExpr_free(expr);
+
+  stepAxisOptionallyFilter(self, selector, result, prev, retcode);
 
   return retcode;
 }
@@ -940,54 +766,8 @@ xQStatusCode xQ_prev(xQ* self, const xmlChar* selector, xQ** result) {
  */
 xQStatusCode xQ_prevAll(xQ* self, const xmlChar* selector, xQ** result) {
   xQStatusCode retcode = XQ_OK;
-  xQSearchExpr* expr;
-  xQNodeList tmpList;
-  xmlNodePtr cur, match;
-  unsigned int i;
-  
-  expr = 0;
-  *result = 0;
-  tmpList.list = 0;
-  
-  retcode = selector ? xQSearchExpr_alloc_initFilter(&expr, selector) : XQ_OK;
-  if (retcode != XQ_OK)
-    return retcode;
-  
-  retcode = xQ_alloc_initResult(result, self);
-  
-  if (retcode == XQ_OK)
-    retcode = xQNodeList_init(&tmpList, self->context.size);
-  
-  for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
-    
-    cur = self->context.list[i]->prev;
-  
-    while (cur && retcode == XQ_OK) {
-      
-      match = cur;
-      
-      if (expr) {
-        xQNodeList_clear(&tmpList);
-    
-        retcode = xQSearchExpr_eval(expr, self, cur, &tmpList);
-    
-        match = (retcode == XQ_OK && tmpList.size == 1 && tmpList.list[0] == cur) ? cur : 0;
-      }
-      
-      if (match)
-        xQNodeList_push(&((*result)->context), match);
-    
-      cur = cur->prev;
-    }
-  }
-  
-  if (retcode != XQ_OK) {
-    xQ_free(*result, 1);
-    *result = 0;
-  }
-  
-  xQNodeList_free(&tmpList, 0);
-  xQSearchExpr_free(expr);
+
+  traverseAxisOptionallyFilter(self, selector, result, prev, retcode);
 
   return retcode;
 }
@@ -1003,48 +783,8 @@ xQStatusCode xQ_prevAll(xQ* self, const xmlChar* selector, xQ** result) {
  */
 xQStatusCode xQ_prevUntil(xQ* self, const xmlChar* selector, xQ** result) {
   xQStatusCode retcode = XQ_OK;
-  xQSearchExpr* expr;
-  xQNodeList tmpList;
-  xmlNodePtr cur;
-  unsigned int i, failed;
-  
-  *result = 0;
-  tmpList.list = 0;
-  
-  retcode = xQSearchExpr_alloc_initFilter(&expr, selector);
-  if (retcode != XQ_OK)
-    return retcode;
-  
-  retcode = xQ_alloc_initResult(result, self);
-  
-  if (retcode == XQ_OK)
-    retcode = xQNodeList_init(&tmpList, self->context.size);
-  
-  for (i = 0; retcode == XQ_OK && i < self->context.size; i++) {
-    xQNodeList_clear(&tmpList);
-    
-    cur = self->context.list[i]->prev;
-    failed = 0;
-    
-    while (cur && retcode == XQ_OK && (!failed)) {
-      retcode = xQSearchExpr_eval(expr, self, cur, &tmpList);
-    
-      if (retcode == XQ_OK && (tmpList.size != 1 || tmpList.list[0] != cur))
-        xQNodeList_push(&((*result)->context), cur);
-      else if (retcode == XQ_OK)
-        failed = 1;
-      
-      cur = cur->prev;
-    }
-  }
-  
-  if (retcode != XQ_OK) {
-    xQ_free(*result, 1);
-    *result = 0;
-  }
-  
-  xQNodeList_free(&tmpList, 0);
-  xQSearchExpr_free(expr);
+
+  traverseAxisUntil(self, selector, result, prev, retcode);
 
   return retcode;
 }
