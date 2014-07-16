@@ -1,3 +1,4 @@
+node_modules
 *.lo
 *.la
 *.o
@@ -10,7 +11,7 @@ ar-lib
 autom4te.cache
 build
 compile
-config.h
+#config.h
 config.guess
 config.h.in
 config.h.in~
