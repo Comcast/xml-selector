@@ -14,6 +14,7 @@ private:
   ~xQWrapper();
   
   static v8::Handle<v8::Value> New(const v8::Arguments& args);
+  static v8::Handle<v8::Value> GetLength(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 
   static v8::Persistent<v8::Function> constructor;
   

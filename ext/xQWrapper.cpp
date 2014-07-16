@@ -37,6 +37,8 @@ void xQWrapper::Init(v8::Handle<v8::Object> exports) {
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
   
   // populate the prototype
+  v8::Local<v8::ObjectTemplate> proto = tpl->PrototypeTemplate();
+  proto->SetAccessor(v8::String::New("length"), GetLength);
 
   
   // export it
@@ -100,3 +102,13 @@ v8::Handle<v8::Value> xQWrapper::New(const v8::Arguments& args) {
   }
 }
 
+/**
+ * Return the length/size/count of the xQ instance
+ */
+v8::Handle<v8::Value> xQWrapper::GetLength(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
+  v8::HandleScope scope;
+  
+  xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(info.This());
+  
+  return scope.Close(v8::Number::New((double)xQ_length(obj->_xq)));
+}
