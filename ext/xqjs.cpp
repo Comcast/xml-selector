@@ -1,15 +1,11 @@
 #include <node.h>
 #include <libxq.h>
+#include "xQWrapper.h"
 
 using namespace v8;
 
-//Handle<Value> ParseString(const Arguments& args);
-
 void RegisterModule(Handle<Object> target) {
-  /*
-  target->Set(String::NewSymbol("parseString"),
-    FunctionTemplate::New(ParseString)->GetFunction());
-  */
+  xQWrapper::Init(target);
 }
 
 NODE_MODULE(xqjs, RegisterModule);

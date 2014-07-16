@@ -1,8 +1,22 @@
 {
   "name": "xq",
   "version": "0.0.1",
+  "description": "A jQuery-like interface for working with XML using CSS-style selectors",
   "dependencies": {
     "libxmljs": "0.11.0"
   },
-  "bundleDependencies": ["libxmljs"]
+  "bundleDependencies": ["libxmljs"],
+  "devDependencies": {
+    "nodeunit": "0.9.0"
+  },
+  "scripts": {
+    "test": "bin/test"
+  },
+  "engines": {
+    "node": "v0.10.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.csv.comcast.com/jhunte202/xq-nodejs.git"
+  }
 }
