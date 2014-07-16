@@ -108,7 +108,7 @@ static xQStatusCode xQNodeList_grow(xQNodeList* list, unsigned long requiredCapa
  * Returns a 0 (XQ_OK) on success, an error code otherwise
  */
 xQStatusCode xQNodeList_insert(xQNodeList* list, xmlNodePtr node, unsigned long atIdx) {
-  xQStatusCode result;
+  xQStatusCode result = XQ_OK;
   
   if (atIdx > list->size)
     return XQ_ARGUMENT_OUT_OF_BOUNDS;
