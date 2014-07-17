@@ -14,13 +14,13 @@ interface:
 ```javascript
 var _ = require('underscore');
 
-/** Constructor accepting 0 or more XML strings or nodes */
-var xQ = function() {
+/** Constructor accepting 1 XML string or 0 or more nodes */
+var xQ = function(xmlOrNode /*, ... */) {
 }
 
 _.extend(xQ.prototype, {
   
-  /* number of nodes in this instance's list */
+  /** number of nodes in this instance's list */
   length: 0
   
 });

@@ -91,7 +91,21 @@ v8::Handle<v8::Value> xQWrapper::New(const v8::Arguments& args) {
     xQWrapper* obj = new xQWrapper();
     assertPointerValid(obj);
     
-    xQStatusCode result = xQ_alloc_init(&(obj->_xq));
+    xQStatusCode result = XQ_OK;
+    
+    if (args.Length() == 0) {
+
+      result = xQ_alloc_init(&(obj->_xq));
+
+    } else if (args.Length() == 1 && args[0]->IsString()) {
+      
+      v8::String::Utf8Value str(args[0]->ToString());
+      xmlDocPtr doc = 0;
+      result = xQ_alloc_initMemory(&(obj->_xq), *str, str.length(), &doc);
+      
+    } else {
+      return v8::ThrowException(v8::Exception::Error(v8::String::New("Not yet supported")));
+    }
     
     if (result != XQ_OK) {
       delete obj;
