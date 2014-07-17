@@ -20,8 +20,11 @@ var xQ = function(xmlOrNode /*, ... */) {
 
 _.extend(xQ.prototype, {
   
-  /** number of nodes in this instance's list */
-  length: 0
+  /** Number of nodes in this instance's list */
+  length: 0,
+  
+  /** Return the text content of the first element in the list or an empty string */
+  text: function() { /* ... */ }
   
 });
 

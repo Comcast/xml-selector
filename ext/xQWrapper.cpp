@@ -20,6 +20,9 @@ static const char* _xqErrors[] = {
 #define assertPointerValid(ptr) \
   if (!(ptr)) return v8::ThrowException(v8::Exception::Error(v8::String::New("Out of memory")));
 
+#define assertGotWrapper(ptr) \
+  if (!(ptr)) return v8::ThrowException(v8::Exception::Error(v8::String::New("xQ function invoked on an invalid instance")));
+
 #define statusToException(code) \
   v8::ThrowException(v8::Exception::Error(v8::String::New(xQStatusString(code))))
 
@@ -41,6 +44,7 @@ void xQWrapper::Init(v8::Handle<v8::Object> exports) {
   // populate the prototype
   v8::Local<v8::ObjectTemplate> proto = tpl->PrototypeTemplate();
   proto->SetAccessor(v8::String::NewSymbol("length"), GetLength);
+  proto->Set(v8::String::NewSymbol("text"), v8::FunctionTemplate::New(Text)->GetFunction());
 
   
   // export it
@@ -148,6 +152,26 @@ v8::Handle<v8::Value> xQWrapper::GetLength(v8::Local<v8::String> property, const
   v8::HandleScope scope;
   
   xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(info.This());
+  assertGotWrapper(obj);
   
   return scope.Close(v8::Number::New((double)xQ_length(obj->_xq)));
+}
+
+/**
+ * Return the text content of the first node in the list
+ */
+v8::Handle<v8::Value> xQWrapper::Text(const v8::Arguments& args) {
+  v8::HandleScope scope;
+  
+  xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(args.This());
+  assertGotWrapper(obj);
+  
+  xmlChar* txt = xQ_getText(obj->_xq);
+  assertPointerValid(txt);
+  
+  v8::Local<v8::String> retTxt = v8::String::New((const char*)txt);
+  
+  xmlFree(txt);
+  
+  return scope.Close(retTxt);
 }
