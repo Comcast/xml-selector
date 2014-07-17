@@ -1,4 +1,6 @@
 #include "xQWrapper.h"
+#include <xml_node.h>
+#include <xml_document.h>
 
 static const char* _xqErrors[] = {
   "OK",
@@ -38,7 +40,7 @@ void xQWrapper::Init(v8::Handle<v8::Object> exports) {
   
   // populate the prototype
   v8::Local<v8::ObjectTemplate> proto = tpl->PrototypeTemplate();
-  proto->SetAccessor(v8::String::New("length"), GetLength);
+  proto->SetAccessor(v8::String::NewSymbol("length"), GetLength);
 
   
   // export it
@@ -53,6 +55,28 @@ xQWrapper::~xQWrapper() {
   if (_xq)
     xQ_free(_xq, 1);
 }
+
+/**
+ * Create a shadow node list that contains the nodes in our list as
+ * objects accessible to JavaScript. This is done at object creation time
+ * to simplify memory management.
+ */
+void xQWrapper::shadowNodeList(v8::Local<v8::Object> wrapper) {
+  int len = (int) xQ_length(_xq);
+  v8::Local<v8::Array> list = v8::Array::New(len);
+  
+  for (int i = 0; i < len; i++) {
+    xmlNodePtr node = _xq->context.list[i];
+
+    if (node->type == XML_DOCUMENT_NODE)
+      list->Set(i, libxmljs::XmlDocument::New((xmlDocPtr)node));
+    else
+      list->Set(i, libxmljs::XmlNode::New(node));
+  }
+  
+  wrapper->Set(v8::String::NewSymbol("_nodes"), list, v8::ReadOnly);
+}
+
   
 /**
  * `new xQ(...)`  or just `xQ(...)` in JavaScript
@@ -75,6 +99,7 @@ v8::Handle<v8::Value> xQWrapper::New(const v8::Arguments& args) {
     }
     
     obj->Wrap(args.This());
+    obj->shadowNodeList(args.This());
     
     return args.This();
   
