@@ -23,6 +23,8 @@ static const char* _xqErrors[] = {
 #define assertGotWrapper(ptr) \
   if (!(ptr)) return v8::ThrowException(v8::Exception::Error(v8::String::New("xQ function invoked on an invalid instance")));
 
+#define assertGotLibxmljs(ptr) assertGotWrapper(ptr)
+
 #define statusToException(code) \
   v8::ThrowException(v8::Exception::Error(v8::String::New(xQStatusString(code))))
 
@@ -108,7 +110,48 @@ void xQWrapper::shadowNodeList(v8::Local<v8::Object> wrapper) {
   wrapper->SetHiddenValue(v8::String::NewSymbol("_nodes"), list);
 }
 
+/**
+ * Utility routine to add a JS object to a node list
+ */
+static v8::Handle<v8::Value> addToNodeList(xQ* q, v8::Local<v8::Value> val) {
+  v8::Local<v8::String> docName = v8::String::New("Document");
   
+  if (val->IsArray()) {
+    
+    v8::TryCatch tryBlock;
+    v8::Local<v8::Array> ary = v8::Local<v8::Array>::Cast(val);
+    uint32_t len = ary->Length();
+
+    for (uint32_t i = 0; i < len; i++) {
+      addToNodeList(q, ary->Get(i));
+      
+      if (tryBlock.HasCaught())
+        return tryBlock.ReThrow();
+    }
+    
+  } else if (val->IsObject()) {
+    
+    v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(val);
+    
+    if (obj->GetConstructorName()->StrictEquals(docName)) {
+      
+      libxmljs::XmlDocument* doc = node::ObjectWrap::Unwrap<libxmljs::XmlDocument>(obj);
+      assertGotLibxmljs(doc);
+      
+      xQStatusCode result = xQNodeList_push(&(q->context), (xmlNodePtr) doc->xml_obj);
+      assertStatusOK(result);
+      
+    } else {
+      return v8::ThrowException(v8::Exception::Error(v8::String::New("Unsupported item in xQ constructor")));
+    }
+
+  } else {
+    return v8::ThrowException(v8::Exception::Error(v8::String::New("Unsupported item in xQ constructor")));
+  }
+  
+  return v8::True();
+}
+ 
 /**
  * `new xQ(...)`  or just `xQ(...)` in JavaScript
  */
@@ -135,7 +178,23 @@ v8::Handle<v8::Value> xQWrapper::New(const v8::Arguments& args) {
       result = xQ_alloc_initMemory(&(obj->_xq), *str, str.length(), &doc);
       
     } else {
-      return v8::ThrowException(v8::Exception::Error(v8::String::New("Not yet supported")));
+
+      result = xQ_alloc_init(&(obj->_xq));
+
+      if (result == XQ_OK) {
+        v8::TryCatch tryBlock;
+        int argslen = args.Length();
+
+        for (int argi = 0; argi < argslen; argi++) {
+          addToNodeList(obj->_xq, args[argi]);
+      
+          if (tryBlock.HasCaught()) {
+            delete obj;
+            return tryBlock.ReThrow();
+          }
+        }
+      }
+      
     }
     
     if (result != XQ_OK) {

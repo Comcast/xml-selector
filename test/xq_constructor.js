@@ -2,6 +2,7 @@
  * Constructor tests
  */
 
+var libxmljs = require('libxmljs');
 var xQ = require('../index');
 
 /**
@@ -81,5 +82,35 @@ module.exports.testInvalidSansNew = function(test) {
     xQ(5);
   });
   
+  test.done();
+}
+
+/**
+ * Constructor from a document
+ */
+module.exports.testDocument = function(test) {
+  var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
+  var doc = libxmljs.parseXmlString(xml);
+
+  var q = new xQ(doc);
+  
+  test.ok(q);
+  test.strictEqual(q.find('item').length, 4);
+
+  test.done();
+}
+
+/**
+ * Constructor from a document without new
+ */
+module.exports.testDocumentSansNew = function(test) {
+  var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
+  var doc = libxmljs.parseXmlString(xml);
+
+  var q = xQ(doc);
+  
+  test.ok(q);
+  test.strictEqual(q.find('item').length, 4);
+
   test.done();
 }
