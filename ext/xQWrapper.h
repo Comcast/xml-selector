@@ -7,6 +7,8 @@
 class xQWrapper : public node::ObjectWrap {
 public:
   static void Init(v8::Handle<v8::Object> exports);
+  
+  static v8::Local<v8::Object> New(xQ* xq);
 
 protected:
   xQWrapper() : _xq(0) { };
@@ -16,8 +18,16 @@ protected:
   void shadowNodeList(v8::Local<v8::Object> wrapper);
   
   static v8::Handle<v8::Value> New(const v8::Arguments& args);
+  static v8::Handle<v8::Value> Find(const v8::Arguments& args);
+  static v8::Handle<v8::Value> ForEach(const v8::Arguments& args);
   static v8::Handle<v8::Value> GetLength(v8::Local<v8::String> property, const v8::AccessorInfo& info);
   static v8::Handle<v8::Value> Text(const v8::Arguments& args);
+  
+  static v8::Handle<v8::Value>   GetIndex(uint32_t index, const v8::AccessorInfo& info);
+  static v8::Handle<v8::Integer> QueryIndex(uint32_t index, const v8::AccessorInfo& info);
+  static v8::Handle<v8::Value>   SetIndex(uint32_t index, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
+  static v8::Handle<v8::Boolean> DeleteIndex(uint32_t index, const v8::AccessorInfo& info);
+  static v8::Handle<v8::Array>   EnumIndicies(const v8::AccessorInfo& info);
   
   static v8::Persistent<v8::Function> constructor;
   
