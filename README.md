@@ -23,6 +23,9 @@ _.extend(xQ.prototype, {
   /** Number of nodes in this instance's list */
   length: 0,
   
+  /** Return the value of the named attribute from the first node in the list */
+  attr: function(name) { /* ... */ },
+  
   /** Iterate over the nodes in this instance (behaves like Array.forEach) and returns this */
   forEach: function(iterator, thisArg) { /* ... */ },
   

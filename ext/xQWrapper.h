@@ -18,6 +18,7 @@ protected:
   void shadowNodeList(v8::Local<v8::Object> wrapper);
   
   static v8::Handle<v8::Value> New(const v8::Arguments& args);
+  static v8::Handle<v8::Value> Attr(const v8::Arguments& args);
   static v8::Handle<v8::Value> Find(const v8::Arguments& args);
   static v8::Handle<v8::Value> ForEach(const v8::Arguments& args);
   static v8::Handle<v8::Value> GetLength(v8::Local<v8::String> property, const v8::AccessorInfo& info);

@@ -43,6 +43,7 @@ void xQWrapper::Init(v8::Handle<v8::Object> exports) {
   
   // populate the prototype
   v8::Local<v8::ObjectTemplate> proto = tpl->PrototypeTemplate();
+  proto->Set(v8::String::NewSymbol("attr"), v8::FunctionTemplate::New(Attr)->GetFunction());
   proto->Set(v8::String::NewSymbol("forEach"), v8::FunctionTemplate::New(ForEach)->GetFunction());
   proto->Set(v8::String::NewSymbol("find"), v8::FunctionTemplate::New(Find)->GetFunction());
   proto->SetAccessor(v8::String::NewSymbol("length"), GetLength);
@@ -169,6 +170,29 @@ v8::Handle<v8::Value> xQWrapper::New(const v8::Arguments& args) {
     return inst;
     
   }
+}
+
+/**
+ * Return the value of the named attribute from the first node in the list
+ */
+v8::Handle<v8::Value> xQWrapper::Attr(const v8::Arguments& args) {
+  v8::HandleScope scope;
+  
+  xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(args.This());
+  assertGotWrapper(obj);
+  
+  v8::String::Utf8Value name(args[0]->ToString());
+
+  xmlChar* txt = xQ_getAttr(obj->_xq, *name);
+  
+  if (!txt)
+    return v8::Undefined();
+  
+  v8::Local<v8::String> retTxt = v8::String::New((const char*)txt);
+  
+  xmlFree(txt);
+  
+  return scope.Close(retTxt);
 }
 
 /**
