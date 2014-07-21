@@ -114,3 +114,111 @@ module.exports.testDocumentSansNew = function(test) {
 
   test.done();
 }
+
+/**
+ * Constructor for a single xml node
+ */
+module.exports.testSingleNode = function(test) {
+  var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
+  var doc = libxmljs.parseXmlString(xml);
+  
+  var q = new xQ(doc.root().child(0));
+  
+  test.ok(q);
+  test.strictEqual(q.find('item').length, 3);
+  test.deepEqual(q.find('item').map(function(n) { return n.text(); }), ["Apple", "Orange", "Banana"]);
+
+  test.done();
+}
+
+/**
+ * Constructor for a single xml node without new
+ */
+module.exports.testSingleNodeSansNew = function(test) {
+  var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
+  var doc = libxmljs.parseXmlString(xml);
+  
+  var q = xQ(doc.root().child(0));
+  
+  test.ok(q);
+  test.strictEqual(q.find('item').length, 3);
+  test.deepEqual(q.find('item').map(function(n) { return n.text(); }), ["Apple", "Orange", "Banana"]);
+
+  test.done();
+}
+
+/**
+ * Constructor for multiple xml nodes
+ */
+module.exports.testMultiNode = function(test) {
+  var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
+  var doc = libxmljs.parseXmlString(xml);
+
+  var a = doc.root().child(0);
+  var b = a.nextSibling();
+  var q = new xQ(a, b);
+  
+  test.ok(q);
+  test.strictEqual(q.length, 2);
+  test.strictEqual(q.find('item').length, 4);
+  test.deepEqual(q.find('item').map(function(n) { return n.text(); }), ["Apple", "Orange", "Banana", "Salad"]);
+
+  test.done();
+}
+
+/**
+ * Constructor for multiple xml nodes without new
+ */
+module.exports.testMultiNodeSansNew = function(test) {
+  var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
+  var doc = libxmljs.parseXmlString(xml);
+
+  var a = doc.root().child(0);
+  var b = a.nextSibling();
+  var q = xQ(a, b);
+  
+  test.ok(q);
+  test.strictEqual(q.length, 2);
+  test.strictEqual(q.find('item').length, 4);
+  test.deepEqual(q.find('item').map(function(n) { return n.text(); }), ["Apple", "Orange", "Banana", "Salad"]);
+
+  test.done();
+}
+
+/**
+ * Constructor for multiple xml nodes in an array
+ */
+module.exports.testArray = function(test) {
+  var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
+  var doc = libxmljs.parseXmlString(xml);
+
+  var a = doc.root().child(0);
+  var b = a.nextSibling();
+  var q = new xQ([a, b]);
+  
+  test.ok(q);
+  test.strictEqual(q.length, 2);
+  test.strictEqual(q.find('item').length, 4);
+  test.deepEqual(q.find('item').map(function(n) { return n.text(); }), ["Apple", "Orange", "Banana", "Salad"]);
+
+  test.done();
+}
+
+/**
+ * Constructor for multiple xml nodes in an array without new
+ */
+module.exports.testArraySansNew = function(test) {
+  var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
+  var doc = libxmljs.parseXmlString(xml);
+
+  var a = doc.root().child(0);
+  var b = a.nextSibling();
+  var q = xQ([a, b]);
+  
+  test.ok(q);
+  test.strictEqual(q.length, 2);
+  test.strictEqual(q.find('item').length, 4);
+  test.deepEqual(q.find('item').map(function(n) { return n.text(); }), ["Apple", "Orange", "Banana", "Salad"]);
+
+  test.done();
+}

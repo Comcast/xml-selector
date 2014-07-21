@@ -1,5 +1,6 @@
 #include "xQWrapper.h"
 #include <xml_node.h>
+#include <xml_element.h>
 #include <xml_document.h>
 
 static const char* _xqErrors[] = {
@@ -114,6 +115,7 @@ void xQWrapper::shadowNodeList(v8::Local<v8::Object> wrapper) {
  * Utility routine to add a JS object to a node list
  */
 static v8::Handle<v8::Value> addToNodeList(xQ* q, v8::Local<v8::Value> val) {
+  v8::Local<v8::TypeSwitch> elemType = v8::TypeSwitch::New(libxmljs::XmlElement::constructor_template);
   v8::Local<v8::String> docName = v8::String::New("Document");
   
   if (val->IsArray()) {
@@ -139,6 +141,14 @@ static v8::Handle<v8::Value> addToNodeList(xQ* q, v8::Local<v8::Value> val) {
       assertGotLibxmljs(doc);
       
       xQStatusCode result = xQNodeList_push(&(q->context), (xmlNodePtr) doc->xml_obj);
+      assertStatusOK(result);
+      
+    } else if (elemType->match(obj)) {
+      
+      libxmljs::XmlNode* elem = node::ObjectWrap::Unwrap<libxmljs::XmlNode>(obj);
+      assertGotLibxmljs(elem);
+      
+      xQStatusCode result = xQNodeList_push(&(q->context), (xmlNodePtr) elem->xml_obj);
       assertStatusOK(result);
       
     } else {
@@ -217,7 +227,7 @@ v8::Handle<v8::Value> xQWrapper::New(const v8::Arguments& args) {
       v8::Local<v8::Value>* argvp = new v8::Local<v8::Value>[argc];
       assertPointerValid(argvp);
     
-      for (int i = 0; i < argc; i++) { argvp[i] = args[0]; }
+      for (int i = 0; i < argc; i++) { argvp[i] = args[i]; }
 
       inst = scope.Close(constructor->NewInstance(argc, argvp));
     
