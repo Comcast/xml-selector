@@ -51,6 +51,7 @@ void xQWrapper::Init(v8::Handle<v8::Object> exports) {
   proto->Set(v8::String::NewSymbol("find"), v8::FunctionTemplate::New(Find)->GetFunction());
   proto->SetAccessor(v8::String::NewSymbol("length"), GetLength);
   proto->Set(v8::String::NewSymbol("text"), v8::FunctionTemplate::New(Text)->GetFunction());
+  proto->Set(v8::String::NewSymbol("xml"), v8::FunctionTemplate::New(Xml)->GetFunction());
   
   proto->SetIndexedPropertyHandler(GetIndex, SetIndex, QueryIndex, DeleteIndex, EnumIndicies);
 
@@ -343,6 +344,25 @@ v8::Handle<v8::Value> xQWrapper::Text(const v8::Arguments& args) {
   assertGotWrapper(obj);
   
   xmlChar* txt = xQ_getText(obj->_xq);
+  assertPointerValid(txt);
+  
+  v8::Local<v8::String> retTxt = v8::String::New((const char*)txt);
+  
+  xmlFree(txt);
+  
+  return scope.Close(retTxt);
+}
+
+/**
+ * Return the xml content of the first node in the list
+ */
+v8::Handle<v8::Value> xQWrapper::Xml(const v8::Arguments& args) {
+  v8::HandleScope scope;
+  
+  xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(args.This());
+  assertGotWrapper(obj);
+  
+  xmlChar* txt = xQ_getXml(obj->_xq);
   assertPointerValid(txt);
   
   v8::Local<v8::String> retTxt = v8::String::New((const char*)txt);

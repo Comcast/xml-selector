@@ -23,6 +23,7 @@ protected:
   static v8::Handle<v8::Value> ForEach(const v8::Arguments& args);
   static v8::Handle<v8::Value> GetLength(v8::Local<v8::String> property, const v8::AccessorInfo& info);
   static v8::Handle<v8::Value> Text(const v8::Arguments& args);
+  static v8::Handle<v8::Value> Xml(const v8::Arguments& args);
   
   static v8::Handle<v8::Value>   GetIndex(uint32_t index, const v8::AccessorInfo& info);
   static v8::Handle<v8::Integer> QueryIndex(uint32_t index, const v8::AccessorInfo& info);

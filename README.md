@@ -36,7 +36,10 @@ _.extend(xQ.prototype, {
   map: function(iterator, thisArg) { /* ... */ },
   
   /** Return the text content of the first element in the list or an empty string */
-  text: function() { /* ... */ }
+  text: function() { /* ... */ },
+  
+  /** Return the xml of the first element in the list or an empty string */
+  xml: function() { /* ... */ }
   
 });
 
