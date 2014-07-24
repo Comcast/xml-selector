@@ -49,6 +49,7 @@ void xQWrapper::Init(v8::Handle<v8::Object> exports) {
   proto->Set(v8::String::NewSymbol("attr"), v8::FunctionTemplate::New(Attr)->GetFunction());
   proto->Set(v8::String::NewSymbol("forEach"), v8::FunctionTemplate::New(ForEach)->GetFunction());
   proto->Set(v8::String::NewSymbol("find"), v8::FunctionTemplate::New(Find)->GetFunction());
+  proto->Set(v8::String::NewSymbol("first"), v8::FunctionTemplate::New(First)->GetFunction());
   proto->SetAccessor(v8::String::NewSymbol("length"), GetLength);
   proto->Set(v8::String::NewSymbol("text"), v8::FunctionTemplate::New(Text)->GetFunction());
   proto->Set(v8::String::NewSymbol("xml"), v8::FunctionTemplate::New(Xml)->GetFunction());
@@ -317,6 +318,22 @@ v8::Handle<v8::Value> xQWrapper::Find(const v8::Arguments& args) {
   xQ* out = 0;
   
   xQStatusCode result = xQ_find(obj->_xq, (xmlChar*) *selector, &out);
+  assertStatusOK(result);
+  
+  return scope.Close(xQWrapper::New(out));
+}
+
+/**
+ * Return a new xQ instance containing the the first node from this xQ's set
+ */
+v8::Handle<v8::Value> xQWrapper::First(const v8::Arguments& args) {
+  v8::HandleScope scope;
+  xQ* out = 0;
+  
+  xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(args.This());
+  assertGotWrapper(obj);
+  
+  xQStatusCode result = xQ_first(obj->_xq, &out);
   assertStatusOK(result);
   
   return scope.Close(xQWrapper::New(out));

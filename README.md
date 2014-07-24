@@ -26,11 +26,14 @@ _.extend(xQ.prototype, {
   /** Return the value of the named attribute from the first node in the list */
   attr: function(name) { /* ... */ },
   
-  /** Iterate over the nodes in this instance (behaves like Array.forEach) and returns this */
-  forEach: function(iterator, thisArg) { /* ... */ },
-  
   /** Return a new xQ containing the nodes that matched the given selector */
   find: function(selector) { /* ... */ },
+  
+  /** Return a new xQ containing the first node from this set */
+  first: function() { /* ... */ },
+  
+  /** Iterate over the nodes in this instance (behaves like Array.forEach) and returns this */
+  forEach: function(iterator, thisArg) { /* ... */ },
   
   /** Iterate over the nodes in this instance and return a new Array containing the returned result of each step */
   map: function(iterator, thisArg) { /* ... */ },
