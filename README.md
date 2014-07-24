@@ -35,6 +35,9 @@ _.extend(xQ.prototype, {
   /** Iterate over the nodes in this instance (behaves like Array.forEach) and returns this */
   forEach: function(iterator, thisArg) { /* ... */ },
   
+  /** Return a new xQ containing the last node from this set */
+  last: function() { /* ... */ },
+  
   /** Iterate over the nodes in this instance and return a new Array containing the returned result of each step */
   map: function(iterator, thisArg) { /* ... */ },
   
