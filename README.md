@@ -26,7 +26,10 @@ _.extend(xQ.prototype, {
   /** Return the value of the named attribute from the first node in the list */
   attr: function(name) { /* ... */ },
   
-  /** Return a new xQ containing the nodes that matched the given selector */
+  /** Return a new xQ containing the nodes from this set that match the given selector */
+  filter: function(selector) { /* ... */ },
+  
+  /** Search this set for descendants matching a selector and return a new xQ with the result */
   find: function(selector) { /* ... */ },
   
   /** Return a new xQ containing the first node from this set */

@@ -19,6 +19,7 @@ protected:
   
   static v8::Handle<v8::Value> New(const v8::Arguments& args);
   static v8::Handle<v8::Value> Attr(const v8::Arguments& args);
+  static v8::Handle<v8::Value> Filter(const v8::Arguments& args);
   static v8::Handle<v8::Value> Find(const v8::Arguments& args);
   static v8::Handle<v8::Value> First(const v8::Arguments& args);
   static v8::Handle<v8::Value> ForEach(const v8::Arguments& args);

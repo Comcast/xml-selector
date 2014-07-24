@@ -48,6 +48,7 @@ void xQWrapper::Init(v8::Handle<v8::Object> exports) {
   v8::Local<v8::ObjectTemplate> proto = tpl->PrototypeTemplate();
   proto->Set(v8::String::NewSymbol("attr"), v8::FunctionTemplate::New(Attr)->GetFunction());
   proto->Set(v8::String::NewSymbol("forEach"), v8::FunctionTemplate::New(ForEach)->GetFunction());
+  proto->Set(v8::String::NewSymbol("filter"), v8::FunctionTemplate::New(Filter)->GetFunction());
   proto->Set(v8::String::NewSymbol("find"), v8::FunctionTemplate::New(Find)->GetFunction());
   proto->Set(v8::String::NewSymbol("first"), v8::FunctionTemplate::New(First)->GetFunction());
   proto->Set(v8::String::NewSymbol("last"), v8::FunctionTemplate::New(Last)->GetFunction());
@@ -307,7 +308,27 @@ v8::Handle<v8::Value> xQWrapper::ForEach(const v8::Arguments& args) {
 }
 
 /**
- * Return a new xQ instance containing the nodes that match the provided selector
+ * Return a new xQ instance containing the nodes from this set that match
+ * the provided selector
+ */
+v8::Handle<v8::Value> xQWrapper::Filter(const v8::Arguments& args) {
+  v8::HandleScope scope;
+  
+  xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(args.This());
+  assertGotWrapper(obj);
+  
+  v8::String::Utf8Value selector(args[0]->ToString());
+  xQ* out = 0;
+  
+  xQStatusCode result = xQ_filter(obj->_xq, (xmlChar*) *selector, &out);
+  assertStatusOK(result);
+  
+  return scope.Close(xQWrapper::New(out));
+}
+
+/**
+ * Search the nodes in this set for descendants matching the provided
+ * selector and return a new xQ with the results
  */
 v8::Handle<v8::Value> xQWrapper::Find(const v8::Arguments& args) {
   v8::HandleScope scope;
