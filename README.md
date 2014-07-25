@@ -26,6 +26,9 @@ _.extend(xQ.prototype, {
   /** Return the value of the named attribute from the first node in the list */
   attr: function(name) { /* ... */ },
   
+  /** Return a new xQ containing the children of the nodes in this set, optionally filtered by a selector */
+  children: function(optionalSelector) { /* ... */ },
+  
   /** Return a new xQ containing the nodes from this set that match the given selector */
   filter: function(selector) { /* ... */ },
   

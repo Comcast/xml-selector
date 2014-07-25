@@ -47,6 +47,7 @@ void xQWrapper::Init(v8::Handle<v8::Object> exports) {
   // populate the prototype
   v8::Local<v8::ObjectTemplate> proto = tpl->PrototypeTemplate();
   proto->Set(v8::String::NewSymbol("attr"), v8::FunctionTemplate::New(Attr)->GetFunction());
+  proto->Set(v8::String::NewSymbol("children"), v8::FunctionTemplate::New(Children)->GetFunction());
   proto->Set(v8::String::NewSymbol("forEach"), v8::FunctionTemplate::New(ForEach)->GetFunction());
   proto->Set(v8::String::NewSymbol("filter"), v8::FunctionTemplate::New(Filter)->GetFunction());
   proto->Set(v8::String::NewSymbol("find"), v8::FunctionTemplate::New(Find)->GetFunction());
@@ -266,6 +267,29 @@ v8::Handle<v8::Value> xQWrapper::Attr(const v8::Arguments& args) {
   xmlFree(txt);
   
   return scope.Close(retTxt);
+}
+
+/**
+ * Return a new xQ instance containing the children of the nodes from this
+ * set, optionally filtered by a selector
+ */
+v8::Handle<v8::Value> xQWrapper::Children(const v8::Arguments& args) {
+  v8::HandleScope scope;
+  xmlChar* selectorStr = 0;
+  
+  xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(args.This());
+  assertGotWrapper(obj);
+  
+  v8::String::Utf8Value selector(args[0]->ToString());
+
+  if (args.Length() > 0 && !args[0]->IsUndefined() && !args[0]->IsNull())
+    selectorStr = (xmlChar*) *selector;
+
+  xQ* out = 0;
+  xQStatusCode result = xQ_children(obj->_xq, selectorStr, &out);
+  assertStatusOK(result);
+  
+  return scope.Close(xQWrapper::New(out));
 }
 
 /**
