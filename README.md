@@ -29,6 +29,9 @@ _.extend(xQ.prototype, {
   /** Return a new xQ containing the children of the nodes in this set, optionally filtered by a selector */
   children: function(optionalSelector) { /* ... */ },
   
+  /** Return a new xQ with the closest ancestor of each node in the list that matches the supplied selector */
+  closest: function(selector) { /* ... */ },
+  
   /** Return a new xQ containing the nodes from this set that match the given selector */
   filter: function(selector) { /* ... */ },
   

@@ -49,3 +49,15 @@ module.exports.testChildNode = function(test) {
 
   test.done();
 }
+
+/**
+ * Test node without children
+ */
+module.exports.testChildlessNode = function(test) {
+  var q = new xQ("<doc><hello /></doc>");
+
+  test.strictEqual(q.find('hello').xml(), "<hello/>");
+  
+  test.done();
+}
+
