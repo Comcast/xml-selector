@@ -826,7 +826,8 @@ xmlChar* xQ_getXml(xQ* self) {
   xmlChar* str = 0;
   int strSize = 0;
   
-  if ( (!self->context.size) || (!self->context.list[0]) || (!self->context.list[0]->children) )
+  if ( (!self->context.size) || (!self->context.list[0]) ||
+       (!self->context.list[0]->children && XML_ELEMENT_NODE != self->context.list[0]->type) )
     return xmlCharStrdup("");
   
   node = self->context.list[0];
