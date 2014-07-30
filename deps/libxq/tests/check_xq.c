@@ -99,6 +99,37 @@ START_TEST (test_ns_find)
 }
 END_TEST
 
+/**
+ * Test xml
+ */
+START_TEST (test_xml_no_children)
+{
+  xQ* x;
+  xQ* x2;
+  xQStatusCode status;
+  const char* xml = "<doc><hello /></doc>";
+  int xmlLen = strlen(xml);
+  xmlDocPtr doc;
+  xmlChar* txt;
+  
+  status = xQ_alloc_initMemory(&x, xml, xmlLen, &doc);
+  ck_assert(status == XQ_OK);
+  
+  status = xQ_find(x, (xmlChar*)"hello", &x2);
+
+  ck_assert(status == XQ_OK);
+  ck_assert(xQ_length(x2) == 1);
+  ck_assert(xmlStrcmp((txt = xQ_getXml(x2)), (xmlChar*)"<hello/>") == 0);
+  
+  xmlFree(txt);
+  xQ_free(x2, 1);
+  
+  xQ_free(x, 1);
+
+  xmlFreeDoc(doc);
+}
+END_TEST
+
 
 
 /**
@@ -110,6 +141,8 @@ Suite* search_suite() {
   singleTestCase(s, tc_ns_prefixes, "namespace prefixes", test_ns_prefixes);
 
   singleTestCase(s, tc_ns_find, "find with namespace", test_ns_find);
+
+  singleTestCase(s, tc_xml_no_children, "xml without children", test_xml_no_children);
 
   return s;
 }
