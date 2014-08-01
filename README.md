@@ -50,6 +50,15 @@ _.extend(xQ.prototype, {
   /** Iterate over the nodes in this instance and return a new Array containing the returned result of each step */
   map: function(iterator, thisArg) { /* ... */ },
   
+  /** Return a new xQ containing the next siblings of the nodes in this set, optionally filtered by a selector */
+  next: function(optionalSelector) { /* ... */ },
+  
+  /** Return a new xQ containing all the next siblings of the nodes in this set, optionally filtered by a selector */
+  nextAll: function(optionalSelector) { /* ... */ },
+
+  /** Return a new xQ containing all the next siblings of the nodes in this set up to siblings matching a selector */
+  nextUntil: function(selector) { /* ... */ },
+
   /** Return the text content of the first element in the list or an empty string */
   text: function() { /* ... */ },
   

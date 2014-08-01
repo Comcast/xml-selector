@@ -27,6 +27,9 @@ protected:
   static v8::Handle<v8::Value> ForEach(const v8::Arguments& args);
   static v8::Handle<v8::Value> Last(const v8::Arguments& args);
   static v8::Handle<v8::Value> GetLength(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+  static v8::Handle<v8::Value> Next(const v8::Arguments& args);
+  static v8::Handle<v8::Value> NextAll(const v8::Arguments& args);
+  static v8::Handle<v8::Value> NextUntil(const v8::Arguments& args);
   static v8::Handle<v8::Value> Text(const v8::Arguments& args);
   static v8::Handle<v8::Value> Xml(const v8::Arguments& args);
   
