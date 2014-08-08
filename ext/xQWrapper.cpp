@@ -58,6 +58,9 @@ void xQWrapper::Init(v8::Handle<v8::Object> exports) {
   proto->Set(v8::String::NewSymbol("next"), v8::FunctionTemplate::New(Next)->GetFunction());
   proto->Set(v8::String::NewSymbol("nextAll"), v8::FunctionTemplate::New(NextAll)->GetFunction());
   proto->Set(v8::String::NewSymbol("nextUntil"), v8::FunctionTemplate::New(NextUntil)->GetFunction());
+  proto->Set(v8::String::NewSymbol("prev"), v8::FunctionTemplate::New(Prev)->GetFunction());
+  proto->Set(v8::String::NewSymbol("prevAll"), v8::FunctionTemplate::New(PrevAll)->GetFunction());
+  proto->Set(v8::String::NewSymbol("prevUntil"), v8::FunctionTemplate::New(PrevUntil)->GetFunction());
   proto->Set(v8::String::NewSymbol("text"), v8::FunctionTemplate::New(Text)->GetFunction());
   proto->Set(v8::String::NewSymbol("xml"), v8::FunctionTemplate::New(Xml)->GetFunction());
   
@@ -496,6 +499,71 @@ v8::Handle<v8::Value> xQWrapper::NextUntil(const v8::Arguments& args) {
   xQ* out = 0;
   
   xQStatusCode result = xQ_nextUntil(obj->_xq, (xmlChar*) *selector, &out);
+  assertStatusOK(result);
+  
+  return scope.Close(xQWrapper::New(out));
+}
+
+/**
+ * Return a new xQ instance containing the prevous immediate sibling of each
+ * node in this set, optionally filtered by a selector
+ */
+v8::Handle<v8::Value> xQWrapper::Prev(const v8::Arguments& args) {
+  v8::HandleScope scope;
+  xmlChar* selectorStr = 0;
+  
+  xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(args.This());
+  assertGotWrapper(obj);
+  
+  v8::String::Utf8Value selector(args[0]->ToString());
+
+  if (args.Length() > 0 && !args[0]->IsUndefined() && !args[0]->IsNull())
+    selectorStr = (xmlChar*) *selector;
+
+  xQ* out = 0;
+  xQStatusCode result = xQ_prev(obj->_xq, selectorStr, &out);
+  assertStatusOK(result);
+  
+  return scope.Close(xQWrapper::New(out));
+}
+
+/**
+ * Return a new xQ instance containing the all the previous siblings of each
+ * node in this set, optionally filtered by a selector
+ */
+v8::Handle<v8::Value> xQWrapper::PrevAll(const v8::Arguments& args) {
+  v8::HandleScope scope;
+  xmlChar* selectorStr = 0;
+  
+  xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(args.This());
+  assertGotWrapper(obj);
+  
+  v8::String::Utf8Value selector(args[0]->ToString());
+
+  if (args.Length() > 0 && !args[0]->IsUndefined() && !args[0]->IsNull())
+    selectorStr = (xmlChar*) *selector;
+
+  xQ* out = 0;
+  xQStatusCode result = xQ_prevAll(obj->_xq, selectorStr, &out);
+  assertStatusOK(result);
+  
+  return scope.Close(xQWrapper::New(out));
+}
+
+/**
+ * Return a new xQ instance containing all the previous siblings of the nodes
+ * in this set up to ones matching the supplied selector
+ */
+v8::Handle<v8::Value> xQWrapper::PrevUntil(const v8::Arguments& args) {
+  v8::HandleScope scope;
+  
+  xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(args.This());
+  assertGotWrapper(obj);
+  
+  v8::String::Utf8Value selector(args[0]->ToString());
+  xQ* out = 0;
+  
+  xQStatusCode result = xQ_prevUntil(obj->_xq, (xmlChar*) *selector, &out);
   assertStatusOK(result);
   
   return scope.Close(xQWrapper::New(out));
