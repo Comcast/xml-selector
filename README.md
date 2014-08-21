@@ -59,6 +59,15 @@ _.extend(xQ.prototype, {
   /** Return a new xQ containing all the next siblings of the nodes in this set up to siblings matching a selector */
   nextUntil: function(selector) { /* ... */ },
 
+  /** Return a new xQ containing the parent of the nodes in this set, optionally filtered by a selector */
+  parent: function(optionalSelector) { /* ... */ },
+  
+  /** Return a new xQ containing all the ancestors of the nodes in this set, optionally filtered by a selector */
+  parents: function(optionalSelector) { /* ... */ },
+
+  /** Return a new xQ containing all the ancestors of the nodes in this set up to the ancestor matching a selector */
+  parentsUntil: function(selector) { /* ... */ },
+
   /** Return a new xQ containing the previous siblings of the nodes in this set, optionally filtered by a selector */
   prev: function(optionalSelector) { /* ... */ },
   
