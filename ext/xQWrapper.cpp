@@ -58,6 +58,7 @@ void xQWrapper::Init(v8::Handle<v8::Object> exports) {
   proto->Set(v8::String::NewSymbol("next"), v8::FunctionTemplate::New(Next)->GetFunction());
   proto->Set(v8::String::NewSymbol("nextAll"), v8::FunctionTemplate::New(NextAll)->GetFunction());
   proto->Set(v8::String::NewSymbol("nextUntil"), v8::FunctionTemplate::New(NextUntil)->GetFunction());
+  proto->Set(v8::String::NewSymbol("not"), v8::FunctionTemplate::New(Not)->GetFunction());
   proto->Set(v8::String::NewSymbol("parent"), v8::FunctionTemplate::New(Parent)->GetFunction());
   proto->Set(v8::String::NewSymbol("parents"), v8::FunctionTemplate::New(Parents)->GetFunction());
   proto->Set(v8::String::NewSymbol("parentsUntil"), v8::FunctionTemplate::New(ParentsUntil)->GetFunction());
@@ -502,6 +503,25 @@ v8::Handle<v8::Value> xQWrapper::NextUntil(const v8::Arguments& args) {
   xQ* out = 0;
   
   xQStatusCode result = xQ_nextUntil(obj->_xq, (xmlChar*) *selector, &out);
+  assertStatusOK(result);
+  
+  return scope.Close(xQWrapper::New(out));
+}
+
+/**
+ * Return a new xQ instance containing all the nodes in this set which
+ * do not match the supplied selector
+ */
+v8::Handle<v8::Value> xQWrapper::Not(const v8::Arguments& args) {
+  v8::HandleScope scope;
+  
+  xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(args.This());
+  assertGotWrapper(obj);
+  
+  v8::String::Utf8Value selector(args[0]->ToString());
+  xQ* out = 0;
+  
+  xQStatusCode result = xQ_not(obj->_xq, (xmlChar*) *selector, &out);
   assertStatusOK(result);
   
   return scope.Close(xQWrapper::New(out));

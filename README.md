@@ -59,6 +59,9 @@ _.extend(xQ.prototype, {
   /** Return a new xQ containing all the next siblings of the nodes in this set up to siblings matching a selector */
   nextUntil: function(selector) { /* ... */ },
 
+  /** Return a new xQ containing the nodes in this set not matching a selector */
+  not: function(selector) { /* ... */ },
+
   /** Return a new xQ containing the parent of the nodes in this set, optionally filtered by a selector */
   parent: function(optionalSelector) { /* ... */ },
   

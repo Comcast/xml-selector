@@ -30,6 +30,7 @@ protected:
   static v8::Handle<v8::Value> Next(const v8::Arguments& args);
   static v8::Handle<v8::Value> NextAll(const v8::Arguments& args);
   static v8::Handle<v8::Value> NextUntil(const v8::Arguments& args);
+  static v8::Handle<v8::Value> Not(const v8::Arguments& args);
   static v8::Handle<v8::Value> Parent(const v8::Arguments& args);
   static v8::Handle<v8::Value> Parents(const v8::Arguments& args);
   static v8::Handle<v8::Value> ParentsUntil(const v8::Arguments& args);
