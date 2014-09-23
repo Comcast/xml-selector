@@ -46,6 +46,7 @@ void xQWrapper::Init(v8::Handle<v8::Object> exports) {
   
   // populate the prototype
   v8::Local<v8::ObjectTemplate> proto = tpl->PrototypeTemplate();
+  proto->Set(v8::String::NewSymbol("addNamespace"), v8::FunctionTemplate::New(AddNamespace)->GetFunction());
   proto->Set(v8::String::NewSymbol("attr"), v8::FunctionTemplate::New(Attr)->GetFunction());
   proto->Set(v8::String::NewSymbol("children"), v8::FunctionTemplate::New(Children)->GetFunction());
   proto->Set(v8::String::NewSymbol("closest"), v8::FunctionTemplate::New(Closest)->GetFunction());
@@ -255,6 +256,24 @@ v8::Handle<v8::Value> xQWrapper::New(const v8::Arguments& args) {
     return inst;
     
   }
+}
+
+/**
+ * Associate a namespace prefix for selectors with a URI
+ */
+v8::Handle<v8::Value> xQWrapper::AddNamespace(const v8::Arguments& args) {
+  v8::HandleScope scope;
+  
+  xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(args.This());
+  assertGotWrapper(obj);
+  
+  v8::String::Utf8Value prefix(args[0]->ToString());
+  v8::String::Utf8Value uri(args[1]->ToString());
+
+  xQStatusCode result = xQ_addNamespace(obj->_xq, (xmlChar*) *prefix, (xmlChar*) *uri);
+  assertStatusOK(result);
+
+  return args.This();
 }
 
 /**

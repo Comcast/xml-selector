@@ -23,6 +23,9 @@ _.extend(xQ.prototype, {
   /** Number of nodes in this instance's list */
   length: 0,
   
+  /** Associate a prefix to use in your selectors with a namespace URI */
+  addNamespace: function(prefix, uri) { /* ... */ },
+  
   /** Return the value of the named attribute from the first node in the list */
   attr: function(name) { /* ... */ },
   

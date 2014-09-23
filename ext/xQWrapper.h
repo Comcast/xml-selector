@@ -18,6 +18,7 @@ protected:
   void shadowNodeList(v8::Local<v8::Object> wrapper);
   
   static v8::Handle<v8::Value> New(const v8::Arguments& args);
+  static v8::Handle<v8::Value> AddNamespace(const v8::Arguments& args);
   static v8::Handle<v8::Value> Attr(const v8::Arguments& args);
   static v8::Handle<v8::Value> Children(const v8::Arguments& args);
   static v8::Handle<v8::Value> Closest(const v8::Arguments& args);
