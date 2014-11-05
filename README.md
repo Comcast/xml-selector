@@ -66,7 +66,7 @@ console.log("greeting=%s object=%s",
 #### But Isn't *\<Alternate Solution\>* Just As Good?
 
 To be sure, there are a number of other viable solutions out there for
-more easily working with XML, but there are three big advantages that xQ
+easily working with XML, but there are three big advantages that xQ
 offers:
 
 1. Selectors are simple but powerful
@@ -182,6 +182,59 @@ element in the document. It's most useful, though, for expressions where
 you may want to match multiple element names, such any element of type
 punctuation: `'*[type="punctuation"]'` or any next sibling of an item
 element: `"item + *"`.
+
+### Namespaces
+
+Namespaces are frequently a source of problems. The flexibility of
+declaring namespaces in different ways in XML combines with varying
+support in available XML tools to create a whole lot of headache for
+developers.
+
+Consider the following real-life XML response from the CIMA REST API:
+
+```xml
+<cima:AuthnResponse xmlns:cima="urn:comcast:login:api:v1.0" version="1.0">
+ <cima:Status Code="urn:comcast:login:api:rest:1.0:status:Incorrect" Message="" />
+</cima:AuthnResponse>
+```
+
+That's what an invalid response looks like. Now consider the
+corresponding valid response:
+
+```xml
+<AuthnResponse xmlns="urn:comcast:login:api:v1.0" version="1.0">
+  <LoginToken ExpiresOn="2013-01-08T03:54:21.488Z"><!-- very long token omitted --></LoginToken>
+  <Status Code="urn:comcast:login:api:rest:1.0:status:Success"/>
+</AuthnResponse>
+```
+
+Both of these documents have all elements in the same namespace
+(urn:comcast:login:api:v1.0), but they specify it in completely different
+ways that mean exactly the same thing. If you're using a library with
+good namespace support to parse the document, this is hopefully made
+transparent to you, otherwise you're going to have to struggle with the
+fact that in some cases the status code can be found in an element named
+"cima:Status" and in other cases it's in an element named just "Status".
+
+xQ is a bit opinionated about this. It assumes that most of the time, you
+don't care about the namespace at all, you just want the Status element.
+In the cases where you do care about the namespace, you don't care
+whether the document author declared a namespace prefix or set the
+default namespace. You just want to access elements from the right one.
+
+Using xQ you can access the `Code` attribute of the `Status` element from
+both of the above documents either by not specifying a namespace:
+
+```javascript
+q.find('Status').attr('Code');
+```
+
+or by explicitly ensuring you match elements with the correct namespace URI:
+
+```javascript
+q.addNamespace('login', 'urn:comcast:login:api:v1.0');
+q.find('login:Status').attr('Code');
+```
 
 <a name="section_interface"></a>
 ## Interface
