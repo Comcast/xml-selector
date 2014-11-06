@@ -243,13 +243,11 @@ Conceptually, the function exported by the module implements this
 interface:
 
 ```javascript
-var _ = require('underscore');
-
-/** Constructor accepting 1 XML string or 0 or more nodes */
+/** Constructor accepting 0 or more nodes, strings of XML, or combinations thereof */
 var xQ = function(xmlOrNode /*, ... */) {
 }
 
-_.extend(xQ.prototype, {
+xQ.prototype = {
   
   /** Number of nodes in this instance's list */
   length: 0,
@@ -320,7 +318,7 @@ _.extend(xQ.prototype, {
   /** Return the xml of the first element in the list or an empty string */
   xml: function() { /* ... */ }
   
-});
+};
 
 module.exports = xQ;
 ```
