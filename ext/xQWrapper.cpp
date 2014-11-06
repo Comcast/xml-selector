@@ -135,20 +135,7 @@ static v8::Handle<v8::Value> addToNodeList(xQ* q, v8::Local<v8::Value> val) {
   v8::Local<v8::TypeSwitch> elemType = v8::TypeSwitch::New(libxmljs::XmlElement::constructor_template);
   v8::Local<v8::String> docName = v8::String::New("Document");
   
-  if (val->IsArray()) {
-    
-    v8::TryCatch tryBlock;
-    v8::Local<v8::Array> ary = v8::Local<v8::Array>::Cast(val);
-    uint32_t len = ary->Length();
-
-    for (uint32_t i = 0; i < len; i++) {
-      addToNodeList(q, ary->Get(i));
-      
-      if (tryBlock.HasCaught())
-        return tryBlock.ReThrow();
-    }
-    
-  } else if (val->IsObject()) {
+  if (val->IsObject()) {
     
     v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(val);
     
@@ -180,82 +167,49 @@ static v8::Handle<v8::Value> addToNodeList(xQ* q, v8::Local<v8::Value> val) {
 }
  
 /**
- * `new xQ(...)`  or just `xQ(...)` in JavaScript
+ * `new xQ(...)`
  */
 v8::Handle<v8::Value> xQWrapper::New(const v8::Arguments& args) {
   v8::HandleScope scope;
-  v8::Handle<v8::Value> inst;
   
-  // `new xQ()`
-  if (args.IsConstructCall()) {
+  // must be invoked as `new xQ([/* list of nodes */])`
+  if ( (! args.IsConstructCall()) ||
+       (! (args.Length() == 0 || (args.Length() == 1 && args[0]->IsArray())) ) )
+    return v8::ThrowException(v8::Exception::Error(v8::String::New("xQ constructor called incorrectly")));
     
-    xQWrapper* obj = new xQWrapper();
-    assertPointerValid(obj);
+
+  xQWrapper* obj = new xQWrapper();
+  assertPointerValid(obj);
+  
+  xQStatusCode result = XQ_OK;
+
+  result = xQ_alloc_init(&(obj->_xq));
+
+  if (result == XQ_OK && args.Length() > 0) {
+
+    v8::TryCatch tryBlock;
+    v8::Local<v8::Array> ary = v8::Local<v8::Array>::Cast(args[0]);
+    uint32_t len = ary->Length();
+
+    for (uint32_t i = 0; i < len; i++) {
+      addToNodeList(obj->_xq, ary->Get(i));
     
-    xQStatusCode result = XQ_OK;
-    
-    if (args.Length() == 0) {
-
-      result = xQ_alloc_init(&(obj->_xq));
-
-    } else if (args.Length() == 1 && args[0]->IsString()) {
-      
-      v8::String::Utf8Value str(args[0]->ToString());
-      xmlDocPtr doc = 0;
-      result = xQ_alloc_initMemory(&(obj->_xq), *str, str.length(), &doc);
-      
-    } else {
-
-      result = xQ_alloc_init(&(obj->_xq));
-
-      if (result == XQ_OK) {
-        v8::TryCatch tryBlock;
-        int argslen = args.Length();
-
-        for (int argi = 0; argi < argslen; argi++) {
-          addToNodeList(obj->_xq, args[argi]);
-      
-          if (tryBlock.HasCaught()) {
-            delete obj;
-            return tryBlock.ReThrow();
-          }
-        }
+      if (tryBlock.HasCaught()) {
+        delete obj;
+        return tryBlock.ReThrow();
       }
-      
     }
-    
-    if (result != XQ_OK) {
-      delete obj;
-      return statusToException(result);
-    }
-    
-    obj->Wrap(args.This());
-    obj->shadowNodeList(args.This());
-    
-    return args.This();
-  
-  // just `xQ()`
-  } else {
-    
-    // turn this into a `new xQ()` call
-    int argc = args.Length();
-
-    if (argc) {
-      v8::Local<v8::Value>* argvp = new v8::Local<v8::Value>[argc];
-      assertPointerValid(argvp);
-    
-      for (int i = 0; i < argc; i++) { argvp[i] = args[i]; }
-
-      inst = scope.Close(constructor->NewInstance(argc, argvp));
-    
-      delete[] argvp;
-    } else {
-      inst = scope.Close(constructor->NewInstance());
-    }
-    
-    return inst;
-    
   }
+
+  if (result != XQ_OK) {
+    delete obj;
+    return statusToException(result);
+  }
+  
+  obj->Wrap(args.This());
+  obj->shadowNodeList(args.This());
+  
+  return args.This();
 }
 
 /**

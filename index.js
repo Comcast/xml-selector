@@ -30,11 +30,10 @@ function xQ() {
     var len = args.length;
     for (var i = 0; i < len; ++i) {
       var a = args[i];
-      var t = typeof a;
       
-      if ("array" === t)
+      if (Array.isArray(a))
         addArgs(a);
-      else if ("object" === t)
+      else if ("object" === typeof a)
         nodes.push(a);
       else
         nodes.push(libxmljs.parseXml(String(a)));
@@ -43,10 +42,7 @@ function xQ() {
   
   addArgs(arguments);
   
-  if (this instanceof xQ)
-    return xqjs.xQ.call(this, nodes);
-  else
-    return new xqjs.xQ(nodes);
+  return new xqjs.xQ(nodes);
 }
 
 util.inherits(xQ, xqjs.xQ);
