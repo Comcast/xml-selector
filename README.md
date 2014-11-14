@@ -236,6 +236,66 @@ q.addNamespace('login', 'urn:comcast:login:api:v1.0');
 q.find('login:Status').attr('Code');
 ```
 
+### Chaining Operations
+
+Most of the methods on xQ return a new xQ instance with their results.
+This allows you to chain together operations and easily build more complex
+searches from the basic ones provided by xQ. For an example of how this is
+useful, let's consider this XML:
+
+```xml
+<catalog>
+  <books>
+    <book>
+      <title>Bean Trees, The</title>
+      <author>Kingsolver, Barbara</author>
+      <published>1988</published>
+      <languages><english/></languages>
+      <isbn-10>0061097314</isbn-10>
+      <isbn-13>978-0061097317</isbn-13>
+      <publisher>HarperTorch</publisher>
+    </book>
+    <book>
+      <title>Cien años de soledad</title>
+      <author>García Márquez, Gabriel</author>
+      <published>1967</published>
+      <languages><spanish/></languages>
+      <isbn-10>0307474720</isbn-10>
+      <isbn-13>978-0307474728</isbn-13>
+      <publisher>Vintage Espanol</publisher>
+    </book>
+    <book>
+      <title>San Manuel Bueno, mártir</title>
+      <author>de Unamuno, Miguel</author>
+      <published>1931</published>
+      <languages><spanish/></languages>
+      <isbn-10>8437601851</isbn-10>
+      <isbn-13>978-8437601854</isbn-13>
+      <publisher>Catedra</publisher>
+    </book>
+    <book>
+      <title>To Kill a Mockingbird</title>
+      <author>Lee, Harper</author>
+      <published>1960</published>
+      <languages><english/></languages>
+      <isbn-10>0446310786</isbn-10>
+      <isbn-13>978-0446310789</isbn-13>
+      <publisher>Grand Central Publishing</publisher>
+    </book>
+  </books>
+</catalog>
+```
+
+Now let's say we'd like to list the titles of all the books in Spanish. We
+don't have selectors sophisticated enough to match that pattern, but we can
+do something like this:
+
+```javascript
+q.find('spanish').closest('book').find('title').map(function(t) { return t.text(); });
+
+// produces: ['Cien años de soledad', 'San Manuel Bueno, mártir']
+```
+
 <a name="section_interface"></a>
 ## Interface
 
