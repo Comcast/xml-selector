@@ -301,7 +301,7 @@ we don't have to introduce a lot of checks and special cases for
 operations that don't produce a match. Because the result of an operation
 that doesn't match anything is an empty set, and performing operations on
 an empty set simply produces another empty set, a set of chained
-operations can remain very concise and still work correct in the case of
+operations can remain very concise and still work correctly in the case of
 non-matching operations.
 
 Let's say, for example, we want to find the titles of books in French instead:
