@@ -296,6 +296,26 @@ q.find('spanish').closest('book').find('title').map(function(t) { return t.text(
 // produces: ['Cien años de soledad', 'San Manuel Bueno, mártir']
 ```
 
+One of the advantages we gain from building operations around sets is that
+we don't have to introduce a lot of checks and special cases for
+operations that don't produce a match. Because the result of an operation
+that doesn't match anything is an empty set, and performing operations on
+an empty set simply produces another empty set, a set of chained
+operations can remain very concise and still work correct in the case of
+non-matching operations.
+
+Let's say, for example, we want to find the titles of books in French instead:
+
+```javascript
+q.find('french').closest('book').find('title').map(function(t) { return t.text(); });
+
+// produces: []
+```
+
+This works as desired, even though we have three different operations that
+follow a failed match. Again, that works because a non-match produces an
+empty set and not a value like `null`, `false`, or `undefined`.
+
 <a name="section_interface"></a>
 ## Interface
 
