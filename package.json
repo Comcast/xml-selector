@@ -1,12 +1,25 @@
 {
-  "name": "xq",
-  "version": "0.0.1",
+  "name": "xml-selector",
+  "version": "0.1.0",
   "description": "A jQuery-like interface for working with XML using CSS-style selectors",
+  "keywords": [
+    "jquery",
+    "selector",
+    "simple",
+    "util",
+    "utility",
+    "xml"
+  ],
+  "homepage": "https://github.com/Comcast/xml-selector",
+  "bugs": {
+    "url": "https://github.com/Comcast/xml-selector/issues"
+  },
+  "license": "Apache-2.0",
+  "author": "Jeffrey Hunter <jeffrey_hunter@cable.comcast.com>",
   "dependencies": {
     "libxmljs": "0.11.0",
     "nan": "1.1.2"
   },
-  "bundleDependencies": ["libxmljs"],
   "devDependencies": {
     "nodeunit": "0.9.0"
   },
@@ -18,6 +31,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.csv.comcast.com/jhunte202/xq-nodejs.git"
+    "url": "git://github.com:Comcast/xml-selector.git"
   }
 }
