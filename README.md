@@ -1,10 +1,7 @@
-# xq
+# XML Selector
 
-This is a module for Node.js which implements JavaScript language bindings
-for [libxq](http://github.csv.comcast.com/jhunte202/xQ).
-
-It is a utility for working with XML. It provides a jQuery-like interface
-for traversing XML documents using CSS-style selectors.
+XML Selector is a utility for working with XML. It provides a jQuery-like
+interface for traversing XML documents using CSS-style selectors.
 
 ## Why Should I Use This Thing?
 
@@ -17,9 +14,9 @@ you're dealing with is, and the most common cases should just work.
 
 ### The Longer Version
 
-xQ provides an interface for efficiently and accurately working with XML
-documents. To get a sense of how it helps save you coding time, consider
-the following XML document:
+XML Selector provides an interface for efficiently and accurately working
+with XML documents. To get a sense of how it helps save you coding time,
+consider the following XML document:
 
 ```xml
 <document>
@@ -55,19 +52,20 @@ var objectText = object ? object.textContent : undefined;
 console.log("greeting=%s object=%s", greetingText, objectText);
 ```
 
-Using xQ, this becomes:
+Using XML Selector, this becomes:
 
 ```javascript
 console.log("greeting=%s object=%s",
-  xQDoc.find('item[type="greeting"]').text(),
-  xQDoc.find('item[type="object"]').text());
+  $doc.find('item[type="greeting"]').text(),
+  $doc.find('item[type="object"]').text());
 ```
+where `$doc` is the document in an XMLSelector instance.
 
 #### But Isn't *\<Alternate Solution\>* Just As Good?
 
 To be sure, there are a number of other viable solutions out there for
-easily working with XML, but there are three big advantages that xQ
-offers:
+easily working with XML, but there are three big advantages that XML
+Selector offers:
 
 1. Selectors are simple but powerful
 
@@ -83,18 +81,18 @@ offers:
    on an object). Unfortunately this tends to involve information loss
    since native data structures generally don't have corollaries for both
    named attributes and named child elements. In the case of namespaces,
-   ambiguities tend to arise. xQ has the advantage of preserving all of
-   the underlying XML document, but making it simpler to find the portion
-   you're looking for.
+   ambiguities tend to arise. XML Selector has the advantage of preserving
+   all of the underlying XML document, but making it simpler to find the
+   portion you're looking for.
 
 1. No stopping to check for null in the middle
 
-   xQ follows jQuery's pattern of providing a set of operations for sets
-   that can be chained together. Since you're working with sets, there
-   isn't a need to check for nulls or no results in the middle of the
-   chain (no results just yield an empty set instead of a null). That
-   frees you up to build a concise set of operations and, if needed, check
-   for success or failure at the end.
+   XML Selector follows jQuery's pattern of providing a collection of
+   operations for sets that can be chained together. Since you're working
+   with sets, there isn't a need to check for nulls or no results in the
+   middle of the chain (no results just yield an empty set instead of a
+   null). That frees you up to build a concise set of operations and, if
+   needed, check for success or failure at the end.
 
 ## Getting Started
 
@@ -103,7 +101,7 @@ with a string of XML or by giving it any number of nodes from
 [libxmljs](https://github.com/polotek/libxmljs):
 
 ```javascript
-var xQ = require('xq');
+var $$ = require('xml-selector');
 
 var xmlStr = '<items>' +
                '<item><value>Zero</value></item>' +
@@ -111,7 +109,7 @@ var xmlStr = '<items>' +
                '<item><value>Two</value></item>' +
              '</items>';
 
-var q = new xQ(xmlStr);
+var $doc = $$(xmlStr);
 
 // or
 
@@ -119,7 +117,7 @@ var libxmljs = require('libxmljs');
 var doc = libxmljs.parseXml(xmlStr);
 var children = doc.root().childNodes();
 
-var q2 = new xQ(children[0], children[1], children[2]);
+var $doc2 = $$(children[0], children[1], children[2]);
 ```
 
 If you're already familiar with jQuery, that may be all you need to get
@@ -128,8 +126,8 @@ to see exactly what's supported.
 
 ### Working With Selectors
 
-xQ currently supports a subset of CSS selectors. The list of currently
-supported selectors is shown below.
+XML Selector currently supports a subset of CSS selectors. The list of
+currently supported selectors is shown below.
 
  * __\*__
    matches any element
@@ -190,40 +188,42 @@ declaring namespaces in different ways in XML combines with varying
 support in available XML tools to create a whole lot of headache for
 developers.
 
-Consider the following real-life XML response from the CIMA REST API:
+Consider the following XML. This is a simplified document similar to a
+real-life API response I once encountered:
 
 ```xml
-<cima:AuthnResponse xmlns:cima="urn:comcast:login:api:v1.0" version="1.0">
- <cima:Status Code="urn:comcast:login:api:rest:1.0:status:Incorrect" Message="" />
-</cima:AuthnResponse>
+<foo:ApiResponse xmlns:foo="urn:acmecompany:foo:api:v1.0" version="1.0">
+ <foo:Status Code="urn:acmecompany:foo:api:rest:1.0:status:Incorrect" Message="" />
+</foo:ApiResponse>
 ```
 
 That's what an invalid response looks like. Now consider the
 corresponding valid response:
 
 ```xml
-<AuthnResponse xmlns="urn:comcast:login:api:v1.0" version="1.0">
-  <LoginToken ExpiresOn="2013-01-08T03:54:21.488Z"><!-- very long token omitted --></LoginToken>
-  <Status Code="urn:comcast:login:api:rest:1.0:status:Success"/>
-</AuthnResponse>
+<ApiResponse xmlns="urn:acmecompany:foo:api:v1.0" version="1.0">
+  <Value><!-- some result here --></Value>
+  <Status Code="urn:acmecompany:foo:api:rest:1.0:status:Success"/>
+</ApiResponse>
 ```
 
 Both of these documents have all elements in the same namespace
-(urn:comcast:login:api:v1.0), but they specify it in completely different
+(urn:acmecompany:foo:api:v1.0), but they specify it in completely different
 ways that mean exactly the same thing. If you're using a library with
 good namespace support to parse the document, this is hopefully made
 transparent to you, otherwise you're going to have to struggle with the
 fact that in some cases the status code can be found in an element named
-"cima:Status" and in other cases it's in an element named just "Status".
+"foo:Status" and in other cases it's in an element named just "Status".
 
-xQ is a bit opinionated about this. It assumes that most of the time, you
-don't care about the namespace at all, you just want the Status element.
-In the cases where you do care about the namespace, you don't care
-whether the document author declared a namespace prefix or set the
+XML Selector is a bit opinionated about this. It assumes that most of the
+time, you don't care about the namespace at all, you just want the Status
+element. In the cases where you do care about the namespace, you don't
+care whether the document author declared a namespace prefix or set the
 default namespace. You just want to access elements from the right one.
 
-Using xQ you can access the `Code` attribute of the `Status` element from
-both of the above documents either by not specifying a namespace:
+Using XML Selector you can access the `Code` attribute of the `Status`
+element from both of the above documents either by not specifying a
+namespace:
 
 ```javascript
 q.find('Status').attr('Code');
@@ -232,16 +232,16 @@ q.find('Status').attr('Code');
 or by explicitly ensuring you match elements with the correct namespace URI:
 
 ```javascript
-q.addNamespace('login', 'urn:comcast:login:api:v1.0');
-q.find('login:Status').attr('Code');
+$doc.addNamespace('acme', 'urn:acmecompany:foo:api:v1.0');
+$doc.find('acme:Status').attr('Code');
 ```
 
 ### Chaining Operations
 
-Most of the methods on xQ return a new xQ instance with their results.
-This allows you to chain together operations and easily build more complex
-searches from the basic ones provided by xQ. For an example of how this is
-useful, let's consider this XML:
+Most of the methods on XMLSelector return a new XMLSelector instance with
+their results. This allows you to chain together operations and easily
+build more complex searches from the basic ones provided by XML Selector.
+For an example of how this is useful, let's consider this XML:
 
 ```xml
 <catalog>
@@ -291,7 +291,7 @@ don't have selectors sophisticated enough to match that pattern, but we can
 do something like this:
 
 ```javascript
-q.find('spanish').closest('book').find('title').map(function(t) { return t.text(); });
+$doc.find('spanish').closest('book').find('title').map(function(t) { return t.text(); });
 
 // produces: ['Cien años de soledad', 'San Manuel Bueno, mártir']
 ```
@@ -307,7 +307,7 @@ non-matching operations.
 Let's say, for example, we want to find the titles of books in French instead:
 
 ```javascript
-q.find('french').closest('book').find('title').map(function(t) { return t.text(); });
+$doc.find('french').closest('book').find('title').map(function(t) { return t.text(); });
 
 // produces: []
 ```
@@ -324,10 +324,10 @@ interface:
 
 ```javascript
 /** Constructor accepting 0 or more nodes, strings of XML, or combinations thereof */
-var xQ = function(xmlOrNode /*, ... */) {
+var XMLSelector = function(xmlOrNode /*, ... */) {
 }
 
-xQ.prototype = {
+XMLSelector.prototype = {
   
   /** Number of nodes in this instance's list */
   length: 0,
@@ -400,22 +400,22 @@ xQ.prototype = {
   
 };
 
-module.exports = xQ;
+module.exports = XMLSelector;
 ```
 
-Additionally, instances of xQ can be accessed by numerical index like an
+Additionally, instances of XMLSelector can be accessed by numerical index like an
 array, so you can do things like this:
 
 ```javascript
-var xQ = require('xq');
+var $$ = require('xml-selector');
 
-var q = new xQ('<items>' +
+var $doc = new $$('<items>' +
                   '<item>Zero</item>' +
                   '<item>One</item>' +
                   '<item>Two</item>' +
                 '</items>');
 
-var items = q.find('item');
+var items = $doc.find('item');
 
 console.log(items[1].text());
 // outputs 'One'
