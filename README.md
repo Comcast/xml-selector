@@ -344,6 +344,9 @@ XMLSelector.prototype = {
   /** Return a new XMLSelector with the closest ancestor of each node in the list that matches the supplied selector */
   closest: function(selector) { /* ... */ },
   
+  /** Return true if all items in this instance pass the given predicate (a user-supplied callback) */
+  every: function(predicate, optionalContext) { /* ... */ },
+  
   /** Return a new XMLSelector containing the nodes from this set that match the given selector */
   filter: function(selector) { /* ... */ },
   

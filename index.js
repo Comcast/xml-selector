@@ -40,6 +40,15 @@ xqjs.xQ.prototype.find = function(selectorOrPredicate, context) {
 }
 
 /**
+ * every function - returns true if all items pass a predicate
+ */
+xqjs.xQ.prototype.every = function(predicate, context) {
+  return this.findIndex(function(n, idx, self) {
+    return ! (context ? predicate.call(context, n, idx, self) : predicate(n, idx, self));
+  }) === -1;
+}
+
+/**
  * map function
  */
 xqjs.xQ.prototype.map = function(iterator, context) {
