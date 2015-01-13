@@ -19,6 +19,7 @@
  */
 
 var xQ = require('../index');
+var $$ = xQ;
 
 /**
  * Test simple selector
@@ -121,5 +122,77 @@ module.exports.testUnmatchedSelector = function(test) {
   test.strictEqual(hello.find('+ hi').length, 0);
   test.strictEqual(hello.find('doc hello *').length, 0);
   
+  test.done();
+}
+
+/**
+ * Test higher-order match
+ */
+module.exports.testHigherOrderEmpty = function(test) {
+
+  test.strictEqual(
+    $$().find(function(n) { return n._attr('value').value() == 'Apple'; }),
+    undefined
+  );
+
+  test.done();
+}
+
+/**
+ * Test higher-order match
+ */
+module.exports.testHigherOrderMatch = function(test) {
+  var $set = $$('<doc>' +
+    '<item value="Apple">Manzana</item>' +
+    '<item value="Orange">Naranja</item>' +
+    '<item value="Banana">Plátano</item>' +
+  '</doc>').find('item');
+  
+  test.strictEqual(
+    $set.find(function(n) { return n._attr('value').value() == 'Orange'; }).text(),
+    'Naranja'
+  );
+
+  test.done();
+}
+
+/**
+ * Test higher-order match
+ */
+module.exports.testHigherOrderNoMatch = function(test) {
+  var $set = $$('<doc>' +
+    '<item value="Apple">Manzana</item>' +
+    '<item value="Orange">Naranja</item>' +
+    '<item value="Banana">Plátano</item>' +
+  '</doc>').find('item');
+  
+  test.strictEqual(
+    $set.find(function(n) { return n._attr('value').value() == 'Kumquat'; }),
+    undefined
+  );
+
+  test.done();
+}
+
+/**
+ * Test higher-order match
+ */
+module.exports.testHigherOrderContext = function(test) {
+  var out = [];
+  var ctx = {"context": 1};
+  
+  var $set = $$('<doc>' +
+    '<item value="Apple">Manzana</item>' +
+    '<item value="Orange">Naranja</item>' +
+    '<item value="Banana">Plátano</item>' +
+  '</doc>').find('item');
+  
+  test.strictEqual(
+    $set.find(function(n) { out.push(this); return false; }, ctx),
+    undefined
+  );
+  
+  test.deepEqual(out, [ctx, ctx, ctx]);
+
   test.done();
 }

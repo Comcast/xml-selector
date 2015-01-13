@@ -21,6 +21,25 @@ var libxmljs = require('libxmljs')
 // Add JavaScript-based utility functions
 
 /**
+ * find function
+ */
+xqjs.xQ.prototype.find = function(selectorOrPredicate, context) {
+  
+  if ('function' == typeof selectorOrPredicate) {
+    
+    var idx = this.findIndex(selectorOrPredicate, context);
+    
+    return idx === -1 ? undefined : this[idx];
+    
+  } else {
+    
+    return this.search(selectorOrPredicate);
+    
+  }
+
+}
+
+/**
  * map function
  */
 xqjs.xQ.prototype.map = function(iterator, context) {

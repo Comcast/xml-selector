@@ -67,7 +67,7 @@ void xQWrapper::Init(v8::Handle<v8::Object> exports) {
   proto->Set(v8::String::NewSymbol("closest"), v8::FunctionTemplate::New(Closest)->GetFunction());
   proto->Set(v8::String::NewSymbol("forEach"), v8::FunctionTemplate::New(ForEach)->GetFunction());
   proto->Set(v8::String::NewSymbol("filter"), v8::FunctionTemplate::New(Filter)->GetFunction());
-  proto->Set(v8::String::NewSymbol("find"), v8::FunctionTemplate::New(Find)->GetFunction());
+  proto->Set(v8::String::NewSymbol("search"), v8::FunctionTemplate::New(Find)->GetFunction());
   proto->Set(v8::String::NewSymbol("findIndex"), v8::FunctionTemplate::New(FindIndex)->GetFunction());
   proto->Set(v8::String::NewSymbol("first"), v8::FunctionTemplate::New(First)->GetFunction());
   proto->Set(v8::String::NewSymbol("last"), v8::FunctionTemplate::New(Last)->GetFunction());

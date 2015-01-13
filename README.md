@@ -347,8 +347,12 @@ XMLSelector.prototype = {
   /** Return a new XMLSelector containing the nodes from this set that match the given selector */
   filter: function(selector) { /* ... */ },
   
-  /** Search this set for descendants matching a selector and return a new XMLSelector with the result */
-  find: function(selector) { /* ... */ },
+  /**
+    May be called as either:
+      find(predicate, optionalContext) - Find the first node in this instance that passes predicate (a user-supplied callback)
+      find(selector) - Alias of search: searches this set for descendants matching a selector and return a new XMLSelector with the result
+   */
+  find: function(selectorOrPredicate, optionalContext) { /* ... */ },
   
   /** Iterate over the nodes in this instance and return the index of the first node that passes predicate (a user-supplied callback) or -1 for no match */
   findIndex: function(predicate, thisArg) { /* ... */ },
@@ -395,6 +399,9 @@ XMLSelector.prototype = {
   /** Return a new XMLSelector containing all the previous siblings of the nodes in this set up to siblings matching a selector */
   prevUntil: function(selector) { /* ... */ },
 
+  /** Search this set for descendants matching a selector and return a new XMLSelector with the result */
+  search: function(selector) { /* ... */ },
+  
   /** Return the text content of the first element in the list or an empty string */
   text: function() { /* ... */ },
   
