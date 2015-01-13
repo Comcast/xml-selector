@@ -21,6 +21,15 @@ var libxmljs = require('libxmljs')
 // Add JavaScript-based utility functions
 
 /**
+ * every function - returns true if all items pass a predicate
+ */
+xqjs.xQ.prototype.every = function(predicate, context) {
+  return this.findIndex(function(n, idx, self) {
+    return ! (context ? predicate.call(context, n, idx, self) : predicate(n, idx, self));
+  }) === -1;
+}
+
+/**
  * find function
  */
 xqjs.xQ.prototype.find = function(selectorOrPredicate, context) {
@@ -37,15 +46,6 @@ xqjs.xQ.prototype.find = function(selectorOrPredicate, context) {
     
   }
 
-}
-
-/**
- * every function - returns true if all items pass a predicate
- */
-xqjs.xQ.prototype.every = function(predicate, context) {
-  return this.findIndex(function(n, idx, self) {
-    return ! (context ? predicate.call(context, n, idx, self) : predicate(n, idx, self));
-  }) === -1;
 }
 
 /**
