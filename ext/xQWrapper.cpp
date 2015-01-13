@@ -68,6 +68,7 @@ void xQWrapper::Init(v8::Handle<v8::Object> exports) {
   proto->Set(v8::String::NewSymbol("forEach"), v8::FunctionTemplate::New(ForEach)->GetFunction());
   proto->Set(v8::String::NewSymbol("filter"), v8::FunctionTemplate::New(Filter)->GetFunction());
   proto->Set(v8::String::NewSymbol("find"), v8::FunctionTemplate::New(Find)->GetFunction());
+  proto->Set(v8::String::NewSymbol("findIndex"), v8::FunctionTemplate::New(FindIndex)->GetFunction());
   proto->Set(v8::String::NewSymbol("first"), v8::FunctionTemplate::New(First)->GetFunction());
   proto->Set(v8::String::NewSymbol("last"), v8::FunctionTemplate::New(Last)->GetFunction());
   proto->SetAccessor(v8::String::NewSymbol("length"), GetLength);
@@ -385,6 +386,51 @@ v8::Handle<v8::Value> xQWrapper::Find(const v8::Arguments& args) {
   assertStatusOK(result);
   
   return scope.Close(xQWrapper::New(out));
+}
+
+/**
+ * Iterate over the items in this collection, passing each to a
+ * user-supplied callback. Returns the index of the first item in the
+ * collection for which the user-supplied callback returns true. Returns
+ * -1 if the callback does not return true for any item.
+ */
+v8::Handle<v8::Value> xQWrapper::FindIndex(const v8::Arguments& args) {
+  v8::HandleScope scope;
+  
+  xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(args.This());
+  assertGotWrapper(obj);
+  
+  if (args.Length() < 1 || !args[0]->IsFunction())
+    return scope.Close(v8::Integer::New(-1));
+
+  v8::Local<v8::Function> callback = v8::Local<v8::Function>::Cast(args[0]);
+
+  v8::Handle<v8::Object> thisArg;
+  if (args.Length() > 1 && args[1]->IsObject()) {
+    thisArg = v8::Local<v8::Object>::Cast(args[1]);
+  } else {
+    thisArg = v8::Context::GetCurrent()->Global();
+  }
+  
+  uint32_t len = (uint32_t) xQ_length(obj->_xq);
+  v8::Local<v8::Array> list = v8::Local<v8::Array>::Cast(args.This()->GetHiddenValue(v8::String::NewSymbol("_nodes")));
+  
+  v8::TryCatch tryBlock;
+  
+  for (uint32_t i = 0; i < len; i++) {
+    const unsigned argc = 3;
+    v8::Local<v8::Value> argv[] = {list->Get(i), v8::Integer::NewFromUnsigned(i), args.This()};
+
+    v8::Local<v8::Value> result = callback->Call(thisArg, argc, argv);
+    
+    if (tryBlock.HasCaught())
+      return tryBlock.ReThrow();
+    
+    if (result->BooleanValue())
+      return v8::Integer::NewFromUnsigned(i);
+  }
+  
+  return v8::Integer::New(-1);
 }
 
 /**

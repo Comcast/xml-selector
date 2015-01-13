@@ -350,6 +350,9 @@ XMLSelector.prototype = {
   /** Search this set for descendants matching a selector and return a new XMLSelector with the result */
   find: function(selector) { /* ... */ },
   
+  /** Iterate over the nodes in this instance and return the index of the first node that passes predicate (a user-supplied callback) or -1 for no match */
+  findIndex: function(predicate, thisArg) { /* ... */ },
+
   /** Return a new XMLSelector containing the first node from this set */
   first: function() { /* ... */ },
   
