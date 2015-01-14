@@ -111,6 +111,13 @@ xqjs.xQ.prototype.reduceRight = function(iterator, initialValue, context) {
   return initialValue;
 }
 
+/**
+ * some function - returns true if any node in the list passes predicate
+ */
+xqjs.xQ.prototype.some = function(predicate, thisArg) {
+  return this.findIndex(predicate, thisArg) !== -1;
+}
+
 
 /**
  * Wrap the native constructor with routines that normalize how it is

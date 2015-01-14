@@ -415,6 +415,9 @@ XMLSelector.prototype = {
   /** Search this set for descendants matching a selector and return a new XMLSelector with the result */
   search: function(selector) { /* ... */ },
   
+  /** Iterate over the nodes in this instance and return true if a node passes the predicate (a user-supplied callback) */
+  some: function(predicate, thisArg) { /* ... */ },
+
   /** Return the text content of the first element in the list or an empty string */
   text: function() { /* ... */ },
   
