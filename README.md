@@ -345,21 +345,21 @@ XMLSelector.prototype = {
   closest: function(selector) { /* ... */ },
   
   /** Return true if all items in this instance pass the given predicate (a user-supplied callback) */
-  every: function(predicate, optionalContext) { /* ... */ },
+  every: function(predicate, optionalThisArg) { /* ... */ },
   
   /** 
     May be called as either:
       filter(selector) - Return a new XMLSelector containing the nodes from this set that match the given selector
-      filter(filterFunction, optionalContext) - Return a new XMLSelector containing the nodes from this set that pass the provided function
+      filter(filterFunction, optionalThisArg) - Return a new XMLSelector containing the nodes from this set that pass the provided function
   */
-  filter: function(selectorOrFilterFunc, optionalContext) { /* ... */ },
+  filter: function(selectorOrFilterFunc, optionalThisArg) { /* ... */ },
   
   /**
     May be called as either:
-      find(predicate, optionalContext) - Find the first node in this instance that passes predicate (a user-supplied callback)
+      find(predicate, optionalThisArg) - Find the first node in this instance that passes predicate (a user-supplied callback)
       find(selector) - Alias of search: searches this set for descendants matching a selector and return a new XMLSelector with the result
    */
-  find: function(selectorOrPredicate, optionalContext) { /* ... */ },
+  find: function(selectorOrPredicate, optionalThisArg) { /* ... */ },
   
   /** Iterate over the nodes in this instance and return the index of the first node that passes predicate (a user-supplied callback) or -1 for no match */
   findIndex: function(predicate, thisArg) { /* ... */ },
@@ -407,10 +407,10 @@ XMLSelector.prototype = {
   prevUntil: function(selector) { /* ... */ },
   
   /** Call a function for each value in the collection (left-to-right) and pass the result to the next iteration; returns the final result */
-  reduce: function(iterator, initialValue, context) { /* ... */ },
+  reduce: function(iterator, initialValue, thisArg) { /* ... */ },
 
   /** Call a function for each value in the collection (right-to-left) and pass the result to the next iteration; returns the final result */
-  reduceRight: function(iterator, initialValue, context) { /* ... */ },
+  reduceRight: function(iterator, initialValue, thisArg) { /* ... */ },
 
   /** Search this set for descendants matching a selector and return a new XMLSelector with the result */
   search: function(selector) { /* ... */ },
