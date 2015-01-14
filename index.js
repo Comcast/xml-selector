@@ -88,6 +88,31 @@ xqjs.xQ.prototype.map = function(iterator, context) {
 }
 
 /**
+ * reduce function
+ */
+xqjs.xQ.prototype.reduce = function(iterator, initialValue, context) {
+  this.forEach(function(value, index, q) {
+    initialValue = iterator.call(this, initialValue, value, index, q);
+  }, context);
+  
+  return initialValue;
+}
+
+/**
+ * reduceRight function
+ */
+xqjs.xQ.prototype.reduceRight = function(iterator, initialValue, context) {
+  for (var index = this.length; index > 0; ) {
+    initialValue = context ?
+      iterator.call(context, initialValue, this[--index], index, this) :
+      iterator(initialValue, this[--index], index, this);
+  }
+  
+  return initialValue;
+}
+
+
+/**
  * Wrap the native constructor with routines that normalize how it is
  * called.
  */

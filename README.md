@@ -405,6 +405,12 @@ XMLSelector.prototype = {
 
   /** Return a new XMLSelector containing all the previous siblings of the nodes in this set up to siblings matching a selector */
   prevUntil: function(selector) { /* ... */ },
+  
+  /** Call a function for each value in the collection (left-to-right) and pass the result to the next iteration; returns the final result */
+  reduce: function(iterator, initialValue, context) { /* ... */ },
+
+  /** Call a function for each value in the collection (right-to-left) and pass the result to the next iteration; returns the final result */
+  reduceRight: function(iterator, initialValue, context) { /* ... */ },
 
   /** Search this set for descendants matching a selector and return a new XMLSelector with the result */
   search: function(selector) { /* ... */ },
