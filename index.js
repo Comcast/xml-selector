@@ -30,6 +30,32 @@ xqjs.xQ.prototype.every = function(predicate, context) {
 }
 
 /**
+ * Modify filter function to accept a filter function or selector
+ */
+var _filter = xqjs.xQ.prototype.filter;
+xqjs.xQ.prototype.filter = function(selectorOrFilterFunc, context) {
+
+  if ('function' == typeof selectorOrFilterFunc) {
+    
+    var nodes = [];
+
+    this.forEach(function(value, index, q) {
+      if (context ? selectorOrFilterFunc.call(context, value, index, q) : selectorOrFilterFunc(value, index, q))
+        nodes.push(value);
+    });
+    
+    return xQ(nodes);
+    
+  } else {
+    
+    return _filter.call(this, selectorOrFilterFunc);
+    
+  }
+  
+}
+
+
+/**
  * find function
  */
 xqjs.xQ.prototype.find = function(selectorOrPredicate, context) {

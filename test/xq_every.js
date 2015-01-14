@@ -79,7 +79,7 @@ module.exports.testContext = function(test) {
 /**
  * Test args
  */
-module.exports.testContext = function(test) {
+module.exports.testArgs = function(test) {
   var $doc = $$('<basket><fruit name="apple"/></basket>').find('fruit');
   
   test.strictEqual($doc.every(function(elem, idx, list) {

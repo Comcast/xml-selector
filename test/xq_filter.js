@@ -18,7 +18,8 @@
  * Test filter function
  */
 
-var xQ = require('../index')
+var xQ = require('../index');
+var $$ = xQ;
 
 /**
  * Test empty document
@@ -78,5 +79,76 @@ module.exports.testAttribute = function(test) {
   
   test.deepEqual(q.find('attr').filter('attr[name="fruit"]').map(function(n) { return n.text(); }), ['Apple']);
 
+  test.done();
+}
+
+/**
+ * Test higher-order call on an empty set
+ */
+module.exports.testHigherOrderEmpty = function(test) {
+  test.strictEqual($$().filter(function(n) { return true; }).length, 0);
+
+  test.strictEqual($$('<doc/>', '<doc/>').filter(function(n) { return false; }).length, 0);
+
+  test.done();
+}
+
+/**
+ * Test higher-order filter call
+ */
+module.exports.testHigherOrder = function(test) {
+  var $attr =
+    $$('<doc><attrs><attr name="fruit"><value>Apple</value></attr><attr name="color"><value>Red</value></attr></attrs></doc>').find('attr');
+  
+  test.deepEqual($attr.filter(function(n) {
+
+    return n._attr('name').value() == 'color';
+
+  }).map(function(n) { return n.text(); }), ['Red']);
+  
+  test.deepEqual($attr.filter(function(n) {
+
+    return n._attr('name').value() == 'fruit';
+
+  }).map(function(n) { return n.text(); }), ['Apple']);
+  
+  test.done();
+}
+
+/**
+ * Test higher-order context usage
+ */
+module.exports.testHigherOrderContext = function(test) {
+  var out = [];
+  var ctx = {"context": 1};
+  
+  var $doc = $$('<basket><fruit name="apple"/><fruit name="pear"/><fruit name="orange"/></basket>').find('fruit');
+  
+  test.strictEqual($doc.filter(function(elem) {
+    out.push(this);
+    return false;
+  }, ctx).length, 0);
+  
+  test.deepEqual(out, [ctx, ctx, ctx]);
+  
+  test.done();
+}
+
+/**
+ * Test args in higher-order usage
+ */
+module.exports.testHigherOrderArgs = function(test) {
+  var $doc = $$('<basket><fruit name="apple"/></basket>').find('fruit');
+  
+  test.strictEqual($doc.filter(function(elem, idx, list) {
+
+    test.strictEqual(elem, $doc[0]);
+    test.strictEqual(idx, 0);
+    test.strictEqual(list, $doc);
+    
+    return false;
+    
+  }).length, 0);
+  
   test.done();
 }

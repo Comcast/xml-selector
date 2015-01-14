@@ -347,8 +347,12 @@ XMLSelector.prototype = {
   /** Return true if all items in this instance pass the given predicate (a user-supplied callback) */
   every: function(predicate, optionalContext) { /* ... */ },
   
-  /** Return a new XMLSelector containing the nodes from this set that match the given selector */
-  filter: function(selector) { /* ... */ },
+  /** 
+    May be called as either:
+      filter(selector) - Return a new XMLSelector containing the nodes from this set that match the given selector
+      filter(filterFunction, optionalContext) - Return a new XMLSelector containing the nodes from this set that pass the provided function
+  */
+  filter: function(selectorOrFilterFunc, optionalContext) { /* ... */ },
   
   /**
     May be called as either:
