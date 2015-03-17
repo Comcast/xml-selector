@@ -20,7 +20,8 @@
       "include_dirs": [
         "<!(node -e \"console.log(require('path').dirname(require.resolve('libxmljs')))\")",
         "<!(node -e \"var p = require('path'); console.log(p.join(p.dirname(require.resolve('libxmljs')),'src'))\")",
-        "<!(node -e \"require('nan')\")"
+        "<!(node -e \"require('nan')\")",
+        "deps/libxq"
       ],
       "sources": [
         "ext/xqjs.cpp",
