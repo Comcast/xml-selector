@@ -22,7 +22,7 @@ if (['darwin','win32'].indexOf(process.platform) == -1) {
 
   new DynamicLibrary(
     path.join(path.dirname(require.resolve('libxmljs')),'build','Release','xmljs.node'),
-    DynamicLibrary.FLAGS.RTLD_LAZY | DynamicLibrary.FLAGS_RTLD_GLOBAL
+    DynamicLibrary.FLAGS.RTLD_LAZY | DynamicLibrary.FLAGS.RTLD_GLOBAL
   );
 }
 
