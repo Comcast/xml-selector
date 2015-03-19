@@ -1,6 +1,6 @@
 {
   "name": "xml-selector",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A jQuery-like interface for working with XML using CSS-style selectors",
   "keywords": [
     "jquery",
