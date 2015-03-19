@@ -1,6 +1,6 @@
 {
   "name": "xml-selector",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A jQuery-like interface for working with XML using CSS-style selectors",
   "keywords": [
     "jquery",
@@ -18,7 +18,8 @@
   "author": "Jeffrey Hunter <jeffrey_hunter@cable.comcast.com>",
   "dependencies": {
     "libxmljs": "0.11.0",
-    "nan": "1.1.2"
+    "nan": "1.1.2",
+    "ffi": "1.2.7"
   },
   "devDependencies": {
     "nodeunit": "0.9.0"
