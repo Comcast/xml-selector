@@ -17,6 +17,7 @@
 #define __XQWRAPPER_H_INCLUDED__
 
 #include <node.h>
+#include <nan.h>
 #include <libxq.h>
 
 class xQWrapper : public node::ObjectWrap {
@@ -32,36 +33,36 @@ protected:
   
   void shadowNodeList(v8::Local<v8::Object> wrapper);
   
-  static v8::Handle<v8::Value> New(const v8::Arguments& args);
-  static v8::Handle<v8::Value> AddNamespace(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Attr(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Children(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Closest(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Filter(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Find(const v8::Arguments& args);
-  static v8::Handle<v8::Value> FindIndex(const v8::Arguments& args);
-  static v8::Handle<v8::Value> First(const v8::Arguments& args);
-  static v8::Handle<v8::Value> ForEach(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Last(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetLength(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-  static v8::Handle<v8::Value> Next(const v8::Arguments& args);
-  static v8::Handle<v8::Value> NextAll(const v8::Arguments& args);
-  static v8::Handle<v8::Value> NextUntil(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Not(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Parent(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Parents(const v8::Arguments& args);
-  static v8::Handle<v8::Value> ParentsUntil(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Prev(const v8::Arguments& args);
-  static v8::Handle<v8::Value> PrevAll(const v8::Arguments& args);
-  static v8::Handle<v8::Value> PrevUntil(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Text(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Xml(const v8::Arguments& args);
+  static NAN_METHOD(New);
+  static NAN_METHOD(AddNamespace);
+  static NAN_METHOD(Attr);
+  static NAN_METHOD(Children);
+  static NAN_METHOD(Closest);
+  static NAN_METHOD(Filter);
+  static NAN_METHOD(Find);
+  static NAN_METHOD(FindIndex);
+  static NAN_METHOD(First);
+  static NAN_METHOD(ForEach);
+  static NAN_METHOD(Last);
+  static NAN_PROPERTY_GETTER(GetLength);
+  static NAN_METHOD(Next);
+  static NAN_METHOD(NextAll);
+  static NAN_METHOD(NextUntil);
+  static NAN_METHOD(Not);
+  static NAN_METHOD(Parent);
+  static NAN_METHOD(Parents);
+  static NAN_METHOD(ParentsUntil);
+  static NAN_METHOD(Prev);
+  static NAN_METHOD(PrevAll);
+  static NAN_METHOD(PrevUntil);
+  static NAN_METHOD(Text);
+  static NAN_METHOD(Xml);
   
-  static v8::Handle<v8::Value>   GetIndex(uint32_t index, const v8::AccessorInfo& info);
-  static v8::Handle<v8::Integer> QueryIndex(uint32_t index, const v8::AccessorInfo& info);
-  static v8::Handle<v8::Value>   SetIndex(uint32_t index, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
-  static v8::Handle<v8::Boolean> DeleteIndex(uint32_t index, const v8::AccessorInfo& info);
-  static v8::Handle<v8::Array>   EnumIndicies(const v8::AccessorInfo& info);
+  static NAN_INDEX_GETTER(GetIndex);
+  static NAN_INDEX_QUERY(QueryIndex);
+  static NAN_INDEX_SETTER(SetIndex);
+  static NAN_INDEX_DELETER(DeleteIndex);
+  static NAN_INDEX_ENUMERATOR(EnumIndicies);
   
   static v8::Persistent<v8::Function> constructor;
   

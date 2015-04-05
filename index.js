@@ -13,20 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var libxmljs = require('libxmljs');
-
-// Linux/Unix only, put the libxmljs symbols in the global space
-if (['darwin','win32'].indexOf(process.platform) == -1) {
-  var path = require('path');
-  var DynamicLibrary = require('ffi').DynamicLibrary;
-
-  new DynamicLibrary(
-    path.join(path.dirname(require.resolve('libxmljs')),'build','Release','xmljs.node'),
-    DynamicLibrary.FLAGS.RTLD_LAZY | DynamicLibrary.FLAGS.RTLD_GLOBAL
-  );
-}
-
-var xqjs = require('./build/Release/xqjs')
+var libxmljs = require('libxmljs')
+  , xqjs = require('./build/Release/xqjs')
   , util = require('util')
 ;
 
