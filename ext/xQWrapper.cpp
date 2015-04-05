@@ -118,14 +118,12 @@ void xQWrapper::Init(v8::Handle<v8::Object> exports) {
  * Create a new wrapped xQWrapper. This is intended for use by C++ callers.
  */
 v8::Local<v8::Object> xQWrapper::New(xQ* xq) {
-  NanEscapableScope();
   
   v8::Local<v8::Object> retObj = NanNew(constructor)->NewInstance();
 
   xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(retObj);
   if (!obj) {
     xQ_free(xq, 1);
-    NanEscapeScope(retObj);
     return retObj;
   }
   
@@ -134,8 +132,6 @@ v8::Local<v8::Object> xQWrapper::New(xQ* xq) {
   
   obj->_xq = xq;
   obj->shadowNodeList(retObj);
-
-  NanEscapeScope(retObj);
 
   return retObj;
 }
