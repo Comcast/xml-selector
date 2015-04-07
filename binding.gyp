@@ -28,6 +28,7 @@
         "ext/xQWrapper.cpp"
       ],
       "dependencies": [
+        "deps/libxml2.gyp:xml2",
         "deps/libxq/libxq.gyp:xq"
       ]
     }
