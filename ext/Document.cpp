@@ -18,6 +18,8 @@
 #include "Document.h"
 #include "utils.h"
 
+#include <stdarg.h>
+
 namespace xmlselector {
 
 
@@ -77,6 +79,40 @@ NAN_METHOD(Document::New) {
 }
 
 /**
+ * Error handling routing for parsing
+ */
+void parseErrorHandler(void *ctx, const char *msg, ...) {
+    va_list args;
+    v8::Array* errors = (v8::Array*)ctx;
+
+    // determine the size of the message
+    va_start(args, msg);
+    
+    int strSize = vsnprintf(0, 0, msg, args);
+    if (strSize < 1) strSize = 1024;
+    
+    va_end(args);
+    
+    // allocate memory for the formatted message
+    char* str = new char[strSize + 1];
+    if (!str) return;
+    str[0] = 0;
+
+    // format it
+    va_start(args, msg);
+    
+    vsnprintf(str, strSize + 1, msg, args);
+    
+    va_end(args);
+    
+    str[strSize] = 0;
+    
+    errors->Set(errors->Length(), NanNew<v8::String>(str));
+    
+    delete[] str;
+}
+
+/**
  * Parse an XML document from a string
  */
 NAN_METHOD(Document::ParseFromString) {
@@ -84,9 +120,26 @@ NAN_METHOD(Document::ParseFromString) {
 
   v8::String::Utf8Value xmlStr(args[0]->ToString());
 
+  v8::Local<v8::Array> errors = NanNew<v8::Array>();
+  xmlSetGenericErrorFunc(*errors, parseErrorHandler);
+  
   xmlDocPtr doc = xmlParseMemory((const char*) *xmlStr, xmlStr.length());
-  if (!doc)
-    ThrowEx("Invalid XML");
+  
+  xmlSetGenericErrorFunc(0, 0);
+  
+  if (!doc) {
+    v8::Local<v8::String> errStr;
+    
+    if (errors->Length() < 1)
+      errStr = NanNew<v8::String>("Invalid XML");
+    else
+      errStr = errors->Get(0)->ToString();
+    
+    for (uint32_t i = 1; i < errors->Length(); i++)
+      errStr = v8::String::Concat(errStr, errors->Get(i)->ToString());
+    
+    ThrowEx(v8::Exception::Error(errStr));
+  }
   
   v8::Local<v8::Object> retObj = NanNew(constructor)->NewInstance();
 
