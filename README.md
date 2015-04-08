@@ -446,3 +446,13 @@ var items = $doc.find('item');
 console.log(items[1].text());
 // outputs 'One'
 ```
+
+## API
+
+### Utility Functions
+
+#### $$.parseFromString(xmlString)
+
+ * `xmlString`: **String** A string of XML to parse
+
+Parses a string of XML and returns a `Document`.
