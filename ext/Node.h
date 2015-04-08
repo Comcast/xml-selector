@@ -13,33 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __XMLSELECTOR_DOCUMENT_H_INCLUDED__
-#define __XMLSELECTOR_DOCUMENT_H_INCLUDED__
+#ifndef __XMLSELECTOR_NODE_H_INCLUDED__
+#define __XMLSELECTOR_NODE_H_INCLUDED__
 
-#include "Node.h"
+#include <node.h>
+#include <nan.h>
+
+#include <libxml/tree.h>
 
 namespace xmlselector {
 
-class Document : public Node {
+class Node : public node::ObjectWrap {
 public:
   static void Init(v8::Handle<v8::Object> exports);
 
+  static v8::Persistent<v8::FunctionTemplate> constructor_template;
   static v8::Persistent<v8::Function> constructor;
-
-  xmlDocPtr doc() { return (xmlDocPtr) _node; }
+  
+  xmlNodePtr node() { return _node; }
 
 protected:
 
-  explicit Document(xmlDocPtr doc);
-  virtual ~Document();
+  explicit Node(xmlNodePtr doc);
+  virtual ~Node();
   
   static NAN_METHOD(New);
-  static NAN_METHOD(ParseFromString);
   
-  void doc(xmlDocPtr newDoc) { _node = (xmlNodePtr) newDoc; }
-
+  xmlNodePtr _node;
 };
 
 } // namespace xmlselector
 
-#endif // __XMLSELECTOR_DOCUMENT_H_INCLUDED__
+#endif // __XMLSELECTOR_NODE_H_INCLUDED__

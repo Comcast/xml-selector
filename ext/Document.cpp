@@ -32,6 +32,9 @@ void Document::Init(v8::Handle<v8::Object> exports) {
 
   tpl->SetClassName(NanNew<v8::String>("Document"));
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
+  
+  // inherits from Node
+  tpl->Inherit(NanNew(Node::constructor_template));
 
   // export it
   NanAssignPersistent(constructor, tpl->GetFunction());
@@ -44,15 +47,15 @@ void Document::Init(v8::Handle<v8::Object> exports) {
 /**
  * Constructor
  */
-Document::Document(xmlDocPtr doc) : _doc(doc) {
+Document::Document(xmlDocPtr doc) : Node((xmlNodePtr)doc) {
 }
 
 /**
  * Destructor
  */
 Document::~Document() {
-  if (_doc)
-    xmlFreeDoc(_doc);
+  if (doc())
+    xmlFreeDoc(doc());
 }
 
 /**
@@ -93,7 +96,7 @@ NAN_METHOD(Document::ParseFromString) {
     NanReturnValue(retObj);
   }
   
-  obj->_doc = doc;
+  obj->doc(doc);
   
   NanReturnValue(retObj);
 }

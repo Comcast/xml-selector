@@ -26,7 +26,8 @@
       "sources": [
         "ext/xqjs.cpp",
 #        "ext/xQWrapper.cpp"
-        "ext/Document.cpp"
+        "ext/Document.cpp",
+        "ext/Node.cpp"
       ],
       "dependencies": [
         "deps/libxml2.gyp:xml2",

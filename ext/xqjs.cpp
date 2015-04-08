@@ -22,6 +22,7 @@ using namespace v8;
 
 void RegisterModule(Handle<Object> target) {
   //xQWrapper::Init(target);
+  xmlselector::Node::Init(target);
   xmlselector::Document::Init(target);
 }
 
