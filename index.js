@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var libxmljs = require('libxmljs')
-  , xqjs = require('./build/Release/xqjs')
+var/* libxmljs = require('libxmljs')
+  ,*/ xqjs = require('./build/Release/xqjs')
   , util = require('util')
 ;
+
+xqjs.xQ = function() { throw new Error("disabled"); }
 
 // Add JavaScript-based utility functions
 
@@ -148,4 +150,5 @@ function xQ() {
 
 util.inherits(xQ, xqjs.xQ);
 
-module.exports = xQ;
+//module.exports = xQ;
+module.exports.parseFromString = xqjs.parseFromString;

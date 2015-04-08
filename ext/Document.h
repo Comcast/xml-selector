@@ -13,16 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef __XMLSELECTOR_DOCUMENT_H_INCLUDED__
+#define __XMLSELECTOR_DOCUMENT_H_INCLUDED__
+
 #include <node.h>
-#include <libxq.h>
-// #include "xQWrapper.h"
-#include "Document.h"
+#include <nan.h>
 
-using namespace v8;
+#include <libxml/tree.h>
 
-void RegisterModule(Handle<Object> target) {
-  //xQWrapper::Init(target);
-  xmlselector::Document::Init(target);
-}
+namespace xmlselector {
 
-NODE_MODULE(xqjs, RegisterModule);
+class Document : public node::ObjectWrap {
+public:
+  static void Init(v8::Handle<v8::Object> exports);
+
+  static v8::Persistent<v8::Function> constructor;
+
+protected:
+
+  explicit Document(xmlDocPtr doc);
+  virtual ~Document();
+  
+  static NAN_METHOD(New);
+  static NAN_METHOD(ParseFromString);
+  
+  xmlDocPtr _doc;
+};
+
+} // namespace xmlselector
+
+#endif // __XMLSELECTOR_DOCUMENT_H_INCLUDED__
