@@ -38,6 +38,8 @@ void Document::Init(v8::Handle<v8::Object> exports) {
   // inherits from Node
   tpl->Inherit(NanNew(Node::constructor_template));
 
+  tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("documentElement"), DocumentElement);
+
   // export it
   NanAssignPersistent(constructor, tpl->GetFunction());
   exports->Set(NanNew<v8::String>("Document"), tpl->GetFunction());
@@ -56,8 +58,24 @@ Document::Document(xmlDocPtr doc) : Node((xmlNodePtr)doc) {
  * Destructor
  */
 Document::~Document() {
-  if (doc())
-    xmlFreeDoc(doc());
+  if (doc()) {
+    xmlDocPtr d = doc();
+    cleanTree((xmlNodePtr)d);
+    xmlFreeDoc(d);
+  }
+}
+
+/**
+ * Cleans the tree of javascript references before deletion
+ */
+void Document::cleanTree(xmlNodePtr n) {
+  if (n->_private) {
+    ((Node*)n->_private)->node(0);
+    n->_private = 0;
+  }
+  
+  if (n->next) cleanTree(n->next);
+  if (n->children) cleanTree(n->children);
 }
 
 /**
@@ -150,8 +168,30 @@ NAN_METHOD(Document::ParseFromString) {
   }
   
   obj->doc(doc);
+  doc->_private = obj;
   
   NanReturnValue(retObj);
+}
+
+/**
+ * documentElement - readonly attribute - DOM Level 1
+ */
+NAN_PROPERTY_GETTER(Document::DocumentElement) {
+  NanScope();
+  
+  Document* obj = node::ObjectWrap::Unwrap<Document>(args.This());
+  assertGotWrapper(obj);
+
+  xmlNodePtr n = obj->doc()->children;
+  
+  while (n) {
+    if (n->type == XML_ELEMENT_NODE)
+      NanReturnValue(Node::New(n));
+
+    n = n->next;
+  }
+
+  NanReturnNull();
 }
 
 

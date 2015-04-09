@@ -457,6 +457,12 @@ console.log(items[1].text());
 
 Parses a string of XML and returns a `Document`.
 
+### Document Properties
+
+#### Document.documentElement
+
+Returns the top-level Element from the document.
+
 ### Node Properties
 
 #### Node.nodeType

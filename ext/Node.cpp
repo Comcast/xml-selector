@@ -50,6 +50,40 @@ Node::Node(xmlNodePtr n) : _node(n) {
  * Destructor
  */
 Node::~Node() {
+  if (_node && _node->_private)
+    _node->_private = 0;
+}
+
+/**
+ * Return the corresponding Javascript object for an XML node
+ */
+v8::Local<v8::Object> Node::New(xmlNodePtr n) {
+  NanEscapableScope();
+  
+  if (n->_private)
+    return NanEscapeScope(NanObjectWrapHandle( ((Node*)n->_private) ));
+  
+  return NanEscapeScope(wrapNode(n));
+}
+
+/**
+ * Handles creating a new Javascript object to wrap an XML node
+ */
+v8::Local<v8::Object> Node::wrapNode(xmlNodePtr n) {
+  v8::Local<v8::Object> retObj = NanNew(constructor)->NewInstance();
+
+  Node* obj = node::ObjectWrap::Unwrap<Node>(retObj);
+  if (!obj)
+    return retObj;
+
+  obj->node(n);
+  n->_private = obj;
+  
+  // ensures the document remains in scope as long as some if its contents are referenced
+  if ( n->doc && ( ((xmlNodePtr)n->doc) != n ) )
+    retObj->SetHiddenValue(NanNew<v8::String>("_doc"), Node::New((xmlNodePtr)n->doc));
+
+  return retObj;
 }
 
 /**

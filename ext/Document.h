@@ -35,8 +35,11 @@ protected:
   
   static NAN_METHOD(New);
   static NAN_METHOD(ParseFromString);
+
+  static NAN_PROPERTY_GETTER(DocumentElement);
   
-  void doc(xmlDocPtr newDoc) { _node = (xmlNodePtr) newDoc; }
+  void doc(xmlDocPtr newDoc) { node((xmlNodePtr) newDoc); }
+  void cleanTree(xmlNodePtr n);
 
 };
 

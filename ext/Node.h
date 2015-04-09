@@ -30,13 +30,18 @@ public:
   static v8::Persistent<v8::FunctionTemplate> constructor_template;
   static v8::Persistent<v8::Function> constructor;
   
+  static v8::Local<v8::Object> New(xmlNodePtr n);
+
   xmlNodePtr node() { return _node; }
+  void node(xmlNodePtr newNode) { _node = newNode; }
 
 protected:
 
   explicit Node(xmlNodePtr doc);
   virtual ~Node();
   
+  static v8::Local<v8::Object> wrapNode(xmlNodePtr n);
+
   static NAN_METHOD(New);
   
   static NAN_PROPERTY_GETTER(NodeType);
