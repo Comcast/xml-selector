@@ -456,3 +456,22 @@ console.log(items[1].text());
  * `xmlString`: **String** A string of XML to parse
 
 Parses a string of XML and returns a `Document`.
+
+### Node Properties
+
+#### Node.nodeType
+
+Returns an integer indicating the node type. Values follow the DOM specification:
+
+ * 1 - **Element**
+ * 2 - **Attr**
+ * 3 - **Text**
+ * 4 - **CDATASection**
+ * 5 - **EntityReference**
+ * 6 - **Entity**
+ * 7 - **ProcessingInstruction**
+ * 8 - **Comment**
+ * 9 - **Document**
+ * 10 - **DocumentType**
+ * 11 - **DocumentFragment**
+ * 12 - **Notation**

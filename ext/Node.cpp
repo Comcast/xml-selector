@@ -31,6 +31,8 @@ void Node::Init(v8::Handle<v8::Object> exports) {
 
   tpl->SetClassName(NanNew<v8::String>("Node"));
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
+  
+  tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("nodeType"), NodeType);
 
   // export it
   NanAssignPersistent(constructor_template, tpl);
@@ -66,6 +68,18 @@ NAN_METHOD(Node::New) {
   obj->Wrap(args.This());
   
   NanReturnThis();
+}
+
+/**
+ * nodeType - readonly attribute - DOM Level 1
+ */
+NAN_PROPERTY_GETTER(Node::NodeType) {
+  NanScope();
+  
+  Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
+  assertGotWrapper(obj);
+
+  NanReturnValue(NanNew<v8::Integer>((int)obj->node()->type));
 }
 
 
