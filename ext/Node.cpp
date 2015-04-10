@@ -35,6 +35,8 @@ void Node::Init(v8::Handle<v8::Object> exports) {
   
   tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("nodeType"), NodeType);
   tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("nodeName"), NodeName);
+  tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("firstChild"), FirstChild);
+  tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("lastChild"), LastChild);
 
   // export it
   NanAssignPersistent(constructor_template, tpl);
@@ -132,7 +134,40 @@ NAN_PROPERTY_GETTER(Node::NodeName) {
   Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
   assertGotWrapper(obj);
 
-  NanReturnValue(NewUtf8Handle((const char*)obj->node()->name));
+  if (!obj->node()->name)
+    NanReturnNull();
+  else
+    NanReturnValue(NewUtf8Handle((const char*)obj->node()->name));
+}
+
+/**
+ * firstChild - readonly attribute - DOM Level 1
+ */
+NAN_PROPERTY_GETTER(Node::FirstChild) {
+  NanScope();
+  
+  Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
+  assertGotWrapper(obj);
+
+  if (!obj->node()->children)
+    NanReturnNull();
+  else
+    NanReturnValue(New(obj->node()->children));
+}
+
+/**
+ * lastChild - readonly attribute - DOM Level 1
+ */
+NAN_PROPERTY_GETTER(Node::LastChild) {
+  NanScope();
+  
+  Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
+  assertGotWrapper(obj);
+
+  if (!obj->node()->last)
+    NanReturnNull();
+  else
+    NanReturnValue(New(obj->node()->last));
 }
 
 

@@ -28,3 +28,43 @@ module.exports['nodeName - should allow UTF-8 encoded values'] = function(test) 
   test.strictEqual(doc.documentElement.nodeName, "d\u00F6c");
   test.done();
 }
+
+/**
+ * firstChild - should return the first child node
+ */
+module.exports['firstChild - should return the first child node'] = function(test) {
+  var doc = $$.parseFromString("<doc><a/><b/><c/></doc>");
+  test.ok(doc.documentElement.firstChild);
+  test.strictEqual(doc.documentElement.firstChild.nodeType, 1) // Node.ELEMENT_NODE
+  test.strictEqual(doc.documentElement.firstChild.nodeName, "a");
+  test.done();
+}
+
+/**
+ * firstChild - should return null for no children
+ */
+module.exports['firstChild - should return null for no children'] = function(test) {
+  var doc = $$.parseFromString("<doc></doc>");
+  test.strictEqual(doc.documentElement.firstChild, null);
+  test.done();
+}
+
+/**
+ * lastChild - should return the last child node
+ */
+module.exports['lastChild - should return the last child node'] = function(test) {
+  var doc = $$.parseFromString("<doc><a/><b/><c/></doc>");
+  test.ok(doc.documentElement.lastChild);
+  test.strictEqual(doc.documentElement.lastChild.nodeType, 1) // Node.ELEMENT_NODE
+  test.strictEqual(doc.documentElement.lastChild.nodeName, "c");
+  test.done();
+}
+
+/**
+ * lastChild - should return null for no children
+ */
+module.exports['lastChild - should return null for no children'] = function(test) {
+  var doc = $$.parseFromString("<doc></doc>");
+  test.strictEqual(doc.documentElement.lastChild, null);
+  test.done();
+}

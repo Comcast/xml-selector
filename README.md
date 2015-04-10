@@ -465,6 +465,14 @@ The top-level Element from the document.
 
 ### Node Properties
 
+#### Node.firstChild
+
+The first child Node of this Node.
+
+#### Node.lastChild
+
+The last child Node of this Node.
+
 #### Node.nodeName
 
 A String containing the node name as defined in the DOM specification. For Elements this is the same as the tag name. For other classes, the property value varies according to the node type.
