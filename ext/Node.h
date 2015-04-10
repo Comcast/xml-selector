@@ -48,6 +48,7 @@ protected:
   static NAN_PROPERTY_GETTER(NodeName);
   static NAN_PROPERTY_GETTER(FirstChild);
   static NAN_PROPERTY_GETTER(LastChild);
+  static NAN_PROPERTY_GETTER(ParentNode);
   
   xmlNodePtr _node;
 };

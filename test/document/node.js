@@ -68,3 +68,24 @@ module.exports['lastChild - should return null for no children'] = function(test
   test.strictEqual(doc.documentElement.lastChild, null);
   test.done();
 }
+
+/**
+ * parentNode - should return the parent node
+ */
+module.exports['parentNode - should return the parent node'] = function(test) {
+  var doc = $$.parseFromString("<doc><a/><b/><c/></doc>");
+  var c = doc.documentElement.lastChild;
+  test.ok(c.parentNode);
+  test.strictEqual(c.parentNode.nodeType, 1) // Node.ELEMENT_NODE
+  test.strictEqual(c.parentNode.nodeName, "doc");
+  test.done();
+}
+
+/**
+ * parentNode - should return null for the document
+ */
+module.exports['parentNode - should return null for the document'] = function(test) {
+  var doc = $$.parseFromString("<doc></doc>");
+  test.strictEqual(doc.parentNode, null);
+  test.done();
+}

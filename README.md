@@ -493,3 +493,7 @@ An integer indicating the node type. Values follow the DOM specification:
  * 10 - **DocumentType**
  * 11 - **DocumentFragment**
  * 12 - **Notation**
+
+#### Node.parentNode
+
+The parent Node of this Node.

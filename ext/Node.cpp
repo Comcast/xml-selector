@@ -37,6 +37,7 @@ void Node::Init(v8::Handle<v8::Object> exports) {
   tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("nodeName"), NodeName);
   tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("firstChild"), FirstChild);
   tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("lastChild"), LastChild);
+  tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("parentNode"), ParentNode);
 
   // export it
   NanAssignPersistent(constructor_template, tpl);
@@ -168,6 +169,21 @@ NAN_PROPERTY_GETTER(Node::LastChild) {
     NanReturnNull();
   else
     NanReturnValue(New(obj->node()->last));
+}
+
+/**
+ * parentNode - readonly attribute - DOM Level 1
+ */
+NAN_PROPERTY_GETTER(Node::ParentNode) {
+  NanScope();
+  
+  Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
+  assertGotWrapper(obj);
+
+  if (!obj->node()->parent)
+    NanReturnNull();
+  else
+    NanReturnValue(New(obj->node()->parent));
 }
 
 
