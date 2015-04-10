@@ -89,3 +89,47 @@ module.exports['parentNode - should return null for the document'] = function(te
   test.strictEqual(doc.parentNode, null);
   test.done();
 }
+
+/**
+ * nextSibling - should return the next sibling node
+ */
+module.exports['nextSibling - should return the next sibling node'] = function(test) {
+  var doc = $$.parseFromString("<doc><a/><b/><c/></doc>");
+  var a = doc.documentElement.firstChild;
+  test.ok(a.nextSibling);
+  test.strictEqual(a.nextSibling.nodeType, 1) // Node.ELEMENT_NODE
+  test.strictEqual(a.nextSibling.nodeName, "b");
+  test.done();
+}
+
+/**
+ * nextSibling - should return null for no next sibling
+ */
+module.exports['nextSibling - should return null for no next sibling'] = function(test) {
+  var doc = $$.parseFromString("<doc><a/><b/><c/></doc>");
+  var c = doc.documentElement.lastChild;
+  test.strictEqual(c.nextSibling, null);
+  test.done();
+}
+
+/**
+ * previousSibling - should return the previous sibling node
+ */
+module.exports['previousSibling - should return the previous sibling node'] = function(test) {
+  var doc = $$.parseFromString("<doc><a/><b/><c/></doc>");
+  var c = doc.documentElement.lastChild;
+  test.ok(c.previousSibling);
+  test.strictEqual(c.previousSibling.nodeType, 1) // Node.ELEMENT_NODE
+  test.strictEqual(c.previousSibling.nodeName, "b");
+  test.done();
+}
+
+/**
+ * previousSibling - should return null for no previous sibling
+ */
+module.exports['previousSibling - should return null for no previous sibling'] = function(test) {
+  var doc = $$.parseFromString("<doc><a/><b/><c/></doc>");
+  var a = doc.documentElement.firstChild;
+  test.strictEqual(a.previousSibling, null);
+  test.done();
+}

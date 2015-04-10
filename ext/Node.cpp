@@ -38,6 +38,8 @@ void Node::Init(v8::Handle<v8::Object> exports) {
   tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("firstChild"), FirstChild);
   tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("lastChild"), LastChild);
   tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("parentNode"), ParentNode);
+  tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("nextSibling"), NextSibling);
+  tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("previousSibling"), PreviousSibling);
 
   // export it
   NanAssignPersistent(constructor_template, tpl);
@@ -184,6 +186,36 @@ NAN_PROPERTY_GETTER(Node::ParentNode) {
     NanReturnNull();
   else
     NanReturnValue(New(obj->node()->parent));
+}
+
+/**
+ * nextSibling - readonly attribute - DOM Level 1
+ */
+NAN_PROPERTY_GETTER(Node::NextSibling) {
+  NanScope();
+  
+  Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
+  assertGotWrapper(obj);
+
+  if (!obj->node()->next)
+    NanReturnNull();
+  else
+    NanReturnValue(New(obj->node()->next));
+}
+
+/**
+ * previousSibling - readonly attribute - DOM Level 1
+ */
+NAN_PROPERTY_GETTER(Node::PreviousSibling) {
+  NanScope();
+  
+  Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
+  assertGotWrapper(obj);
+
+  if (!obj->node()->prev)
+    NanReturnNull();
+  else
+    NanReturnValue(New(obj->node()->prev));
 }
 
 

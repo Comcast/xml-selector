@@ -467,11 +467,15 @@ The top-level Element from the document.
 
 #### Node.firstChild
 
-The first child Node of this Node.
+The first child Node of this Node or null for none.
 
 #### Node.lastChild
 
-The last child Node of this Node.
+The last child Node of this Node or null for none.
+
+#### Node.nextSibling
+
+The sibling Node immediate following this Node in the document tree. This property is null in the case of no next sibling.
 
 #### Node.nodeName
 
@@ -496,4 +500,8 @@ An integer indicating the node type. Values follow the DOM specification:
 
 #### Node.parentNode
 
-The parent Node of this Node.
+The parent Node of this Node. If this Node has no parent, this property is null. The property will only be null for top-level nodes such as Documents or DocumentFragments, attribute (Attr) nodes, or detached nodes.
+
+#### Node.previousSibling
+
+The sibling Node immediate preceding this Node in the document tree. This property is null in the case of no previous sibling.
