@@ -38,6 +38,9 @@
 #define assertGotWrapper(ptr) \
   if (!(ptr)) ThrowEx("Method invoked in an incorrect context");
 
+#define assertHasNode(obj) \
+  if (!(obj)->node()) NanReturnNull();
+
 #define FUNCTION_VALUE(f) \
   NanNew<v8::FunctionTemplate>(f)->GetFunction()
 

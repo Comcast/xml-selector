@@ -181,6 +181,7 @@ NAN_PROPERTY_GETTER(Document::DocumentElement) {
   
   Document* obj = node::ObjectWrap::Unwrap<Document>(args.This());
   assertGotWrapper(obj);
+  assertHasNode(obj);
 
   xmlNodePtr n = obj->doc()->children;
   

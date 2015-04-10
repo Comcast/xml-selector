@@ -125,6 +125,7 @@ NAN_PROPERTY_GETTER(Node::NodeType) {
   
   Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
   assertGotWrapper(obj);
+  assertHasNode(obj);
 
   NanReturnValue(NanNew<v8::Integer>((int)obj->node()->type));
 }
@@ -137,6 +138,7 @@ NAN_PROPERTY_GETTER(Node::NodeName) {
   
   Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
   assertGotWrapper(obj);
+  assertHasNode(obj);
 
   if (!obj->node()->name)
     NanReturnNull();
@@ -152,6 +154,7 @@ NAN_PROPERTY_GETTER(Node::FirstChild) {
   
   Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
   assertGotWrapper(obj);
+  assertHasNode(obj);
 
   if (!obj->node()->children)
     NanReturnNull();
@@ -167,6 +170,7 @@ NAN_PROPERTY_GETTER(Node::LastChild) {
   
   Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
   assertGotWrapper(obj);
+  assertHasNode(obj);
 
   if (!obj->node()->last)
     NanReturnNull();
@@ -182,6 +186,7 @@ NAN_PROPERTY_GETTER(Node::ParentNode) {
   
   Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
   assertGotWrapper(obj);
+  assertHasNode(obj);
 
   if (!obj->node()->parent)
     NanReturnNull();
@@ -197,6 +202,7 @@ NAN_PROPERTY_GETTER(Node::NextSibling) {
   
   Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
   assertGotWrapper(obj);
+  assertHasNode(obj);
 
   if (!obj->node()->next)
     NanReturnNull();
@@ -212,6 +218,7 @@ NAN_PROPERTY_GETTER(Node::PreviousSibling) {
   
   Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
   assertGotWrapper(obj);
+  assertHasNode(obj);
 
   if (!obj->node()->prev)
     NanReturnNull();
@@ -227,6 +234,7 @@ NAN_PROPERTY_GETTER(Node::OwnerDocument) {
   
   Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
   assertGotWrapper(obj);
+  assertHasNode(obj);
 
   if ( (!obj->node()->doc) ||
        (obj->node()->type == XML_DOCUMENT_NODE && obj->node()->doc == (xmlDocPtr)obj->node()) )
