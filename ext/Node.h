@@ -40,7 +40,7 @@ protected:
   explicit Node(xmlNodePtr doc);
   virtual ~Node();
   
-  static v8::Local<v8::Object> wrapNode(xmlNodePtr n);
+  static v8::Local<v8::Object> wrapNode(xmlNodePtr n, v8::Persistent<v8::Function>& ctor);
 
   static NAN_METHOD(New);
   

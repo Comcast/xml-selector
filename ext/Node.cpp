@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include "Node.h"
+#include "Element.h"
 #include "utils.h"
 
 namespace xmlselector {
@@ -63,14 +64,19 @@ v8::Local<v8::Object> Node::New(xmlNodePtr n) {
   if (n->_private)
     return NanEscapeScope(NanObjectWrapHandle( ((Node*)n->_private) ));
   
-  return NanEscapeScope(wrapNode(n));
+  switch (n->type) {
+  case XML_ELEMENT_NODE:
+    return NanEscapeScope(wrapNode(n, Element::constructor));
+  default:
+    return NanEscapeScope(wrapNode(n, Node::constructor));
+  }
 }
 
 /**
  * Handles creating a new Javascript object to wrap an XML node
  */
-v8::Local<v8::Object> Node::wrapNode(xmlNodePtr n) {
-  v8::Local<v8::Object> retObj = NanNew(constructor)->NewInstance();
+v8::Local<v8::Object> Node::wrapNode(xmlNodePtr n, v8::Persistent<v8::Function>& ctor) {
+  v8::Local<v8::Object> retObj = NanNew(ctor)->NewInstance();
 
   Node* obj = node::ObjectWrap::Unwrap<Node>(retObj);
   if (!obj)
