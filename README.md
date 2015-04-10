@@ -498,6 +498,10 @@ An integer indicating the node type. Values follow the DOM specification:
  * 11 - **DocumentFragment**
  * 12 - **Notation**
 
+#### Node.ownerDocument
+
+The Document that contains this Node. This property is null for the Document itself.
+
 #### Node.parentNode
 
 The parent Node of this Node. If this Node has no parent, this property is null. The property will only be null for top-level nodes such as Documents or DocumentFragments, attribute (Attr) nodes, or detached nodes.

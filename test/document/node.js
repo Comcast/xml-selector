@@ -133,3 +133,23 @@ module.exports['previousSibling - should return null for no previous sibling'] =
   test.strictEqual(a.previousSibling, null);
   test.done();
 }
+
+/**
+ * ownerDocument - should return the document containing the node
+ */
+module.exports['ownerDocument - should return the document containing the node'] = function(test) {
+  var doc = $$.parseFromString("<doc><a/><b/><c/></doc>");
+  var a = doc.documentElement.firstChild;
+  test.ok(a.ownerDocument, null);
+  test.strictEqual(a.ownerDocument.nodeType, 9); // Node.DOCUMENT_NODE
+  test.done();
+}
+
+/**
+ * ownerDocument - should return null for the document
+ */
+module.exports['ownerDocument - should return null for the document'] = function(test) {
+  var doc = $$.parseFromString("<doc></doc>");
+  test.strictEqual(doc.ownerDocument, null);
+  test.done();
+}

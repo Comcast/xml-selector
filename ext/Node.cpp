@@ -40,6 +40,7 @@ void Node::Init(v8::Handle<v8::Object> exports) {
   tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("parentNode"), ParentNode);
   tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("nextSibling"), NextSibling);
   tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("previousSibling"), PreviousSibling);
+  tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("ownerDocument"), OwnerDocument);
 
   // export it
   NanAssignPersistent(constructor_template, tpl);
@@ -216,6 +217,22 @@ NAN_PROPERTY_GETTER(Node::PreviousSibling) {
     NanReturnNull();
   else
     NanReturnValue(New(obj->node()->prev));
+}
+
+/**
+ * ownerDocument - readonly attribute - DOM Level 1
+ */
+NAN_PROPERTY_GETTER(Node::OwnerDocument) {
+  NanScope();
+  
+  Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
+  assertGotWrapper(obj);
+
+  if ( (!obj->node()->doc) ||
+       (obj->node()->type == XML_DOCUMENT_NODE && obj->node()->doc == (xmlDocPtr)obj->node()) )
+    NanReturnNull();
+  else
+    NanReturnValue(New((xmlNodePtr)obj->node()->doc));
 }
 
 
