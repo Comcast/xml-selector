@@ -45,6 +45,7 @@ protected:
   static NAN_METHOD(New);
   
   static NAN_PROPERTY_GETTER(NodeType);
+  static NAN_PROPERTY_GETTER(NodeName);
   
   xmlNodePtr _node;
 };

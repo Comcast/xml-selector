@@ -17,11 +17,19 @@
 #define __XMLSELECTOR_UTILS_H_INCLUDED__
 
 #if (NODE_MODULE_VERSION > NODE_0_10_MODULE_VERSION)
+
+#define VEIGHT_ISOLATE_ARG v8::Isolate::GetCurrent(),
+
 #define ThrowEx(msg) do { NanThrowError(msg); return; } while (0);
 #define ReThrowEx(blk) do { blk.ReThrow(); return; } while (0);
+
 #else
+
+#define VEIGHT_ISOLATE_ARG
+
 #define ThrowEx(msg) NanThrowError(msg)
 #define ReThrow(blk) return blk.ReThrow();
+
 #endif
 
 #define assertPointerValid(ptr) \
@@ -32,5 +40,8 @@
 
 #define FUNCTION_VALUE(f) \
   NanNew<v8::FunctionTemplate>(f)->GetFunction()
+
+#define NewUtf8Handle(str) \
+  v8::String::NewFromUtf8(VEIGHT_ISOLATE_ARG (str))
 
 #endif // __XMLSELECTOR_UTILS_H_INCLUDED__

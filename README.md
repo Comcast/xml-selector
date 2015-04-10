@@ -461,13 +461,17 @@ Parses a string of XML and returns a `Document`.
 
 #### Document.documentElement
 
-Returns the top-level Element from the document.
+The top-level Element from the document.
 
 ### Node Properties
 
+#### Node.nodeName
+
+A String containing the node name as defined in the DOM specification. For Elements this is the same as the tag name. For other classes, the property value varies according to the node type.
+
 #### Node.nodeType
 
-Returns an integer indicating the node type. Values follow the DOM specification:
+An integer indicating the node type. Values follow the DOM specification:
 
  * 1 - **Element**
  * 2 - **Attr**
