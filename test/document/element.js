@@ -36,3 +36,12 @@ module.exports['getAttribute - should return an empty string for no value'] = fu
   test.strictEqual(doc.documentElement.getAttribute(), "");
   test.done();
 }
+
+/**
+ * tagName - should return the tag name for an element
+ */
+module.exports['tagName - should return the tag name for an element'] = function(test) {
+  var doc = $$.parseFromString("<doc></doc>");
+  test.strictEqual(doc.documentElement.tagName, "doc");
+  test.done();
+}

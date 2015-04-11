@@ -463,6 +463,12 @@ Parses a string of XML and returns a `Document`.
 
 The top-level Element from the document.
 
+### Element Properties
+
+#### Element.tagName
+
+A string containing the name of the element.
+
 ### Element Instance Methods
 
 #### Element.getAttribute(name)

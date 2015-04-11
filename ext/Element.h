@@ -35,6 +35,8 @@ protected:
   
   static NAN_METHOD(New);
   static NAN_METHOD(GetAttribute);
+
+  static NAN_PROPERTY_GETTER(TagName);
   
   void elem(xmlElementPtr newElem) { node((xmlNodePtr) newElem); }
 

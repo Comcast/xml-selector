@@ -36,6 +36,8 @@ void Element::Init(v8::Handle<v8::Object> exports) {
 
   NanSetPrototypeTemplate(tpl, "getAttribute", FUNCTION_VALUE(GetAttribute));
 
+  tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("tagName"), TagName);
+
   // export it
   NanAssignPersistent(constructor, tpl->GetFunction());
   exports->Set(NanNew<v8::String>("Element"), tpl->GetFunction());
@@ -95,6 +97,22 @@ NAN_METHOD(Element::GetAttribute) {
   xmlFree(value);
     
   NanReturnValue(str);
+}
+
+/**
+ * tagName - readonly attribute - DOM Level 1
+ */
+NAN_PROPERTY_GETTER(Element::TagName) {
+  NanScope();
+  
+  Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
+  assertGotWrapper(obj);
+  assertHasNode(obj);
+
+  if (!obj->node()->name)
+    NanReturnNull();
+  else
+    NanReturnValue(NewUtf8Handle((const char*)obj->node()->name));
 }
 
 
