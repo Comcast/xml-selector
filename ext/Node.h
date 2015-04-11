@@ -43,6 +43,7 @@ protected:
   static v8::Local<v8::Object> wrapNode(xmlNodePtr n, v8::Persistent<v8::Function>& ctor);
 
   static NAN_METHOD(New);
+  static NAN_METHOD(HasChildNodes);
   
   static NAN_PROPERTY_GETTER(NodeType);
   static NAN_PROPERTY_GETTER(NodeName);

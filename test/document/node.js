@@ -153,3 +153,23 @@ module.exports['ownerDocument - should return null for the document'] = function
   test.strictEqual(doc.ownerDocument, null);
   test.done();
 }
+
+/**
+ * hasChildNodes() - should return true for a node with children
+ */
+module.exports['hasChildNodes - should return true for a node with children'] = function(test) {
+  var doc = $$.parseFromString("<doc><a/><b/><c/></doc>");
+  test.strictEqual(doc.hasChildNodes(), true);
+  test.strictEqual(doc.documentElement.hasChildNodes(), true);
+  test.done();
+}
+
+/**
+ * hasChildNodes() - should return false for a node without children
+ */
+module.exports['hasChildNodes - should return false for a node without children'] = function(test) {
+  var doc = $$.parseFromString("<doc></doc>");
+  test.strictEqual(doc.documentElement.hasChildNodes(), false);
+  test.done();
+}
+

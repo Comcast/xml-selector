@@ -509,3 +509,9 @@ The parent Node of this Node. If this Node has no parent, this property is null.
 #### Node.previousSibling
 
 The sibling Node immediate preceding this Node in the document tree. This property is null in the case of no previous sibling.
+
+### Node Instance Methods
+
+#### Node.hasChildNodes()
+
+Returns a boolean. Returns `true` if this node has children, `false` otherwise.

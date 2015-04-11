@@ -33,6 +33,8 @@ void Node::Init(v8::Handle<v8::Object> exports) {
   tpl->SetClassName(NanNew<v8::String>("Node"));
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
   
+  NanSetPrototypeTemplate(tpl, "hasChildNodes", FUNCTION_VALUE(HasChildNodes));
+
   tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("nodeType"), NodeType);
   tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("nodeName"), NodeName);
   tpl->PrototypeTemplate()->SetAccessor(NanNew<v8::String>("firstChild"), FirstChild);
@@ -115,6 +117,21 @@ NAN_METHOD(Node::New) {
   obj->Wrap(args.This());
   
   NanReturnThis();
+}
+
+/**
+ * hasChildNodes() - returns boolean - DOM Level 1
+ */
+NAN_METHOD(Node::HasChildNodes) {
+  NanScope();
+  
+  Node* obj = node::ObjectWrap::Unwrap<Node>(args.This());
+  assertGotWrapper(obj);
+  
+  if (obj->node() && obj->node()->children)
+    NanReturnValue(NanTrue());
+  else
+    NanReturnValue(NanFalse());
 }
 
 /**
