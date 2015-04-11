@@ -18,12 +18,21 @@ var $$ = require('../../index')
 
 
 /**
- * documentElement - should return the document element
+ * getAttribute - should return the attribute value
  */
-module.exports['documentElement - should return the documentElement'] = function(test) {
+module.exports['getAttribute - should return the attribute value'] = function(test) {
+  var doc = $$.parseFromString("<doc foo=\"bar\" a=\"alpha\"></doc>");
+  test.strictEqual(doc.documentElement.getAttribute("foo"), "bar");
+  test.strictEqual(doc.documentElement.getAttribute("a"), "alpha");
+  test.done();
+}
+
+/**
+ * getAttribute - should return an empty string for no value
+ */
+module.exports['getAttribute - should return an empty string for no value'] = function(test) {
   var doc = $$.parseFromString("<doc></doc>");
-  test.ok(doc.documentElement);
-  test.strictEqual(doc.documentElement.nodeType, 1); // Node.ELEMENT_NODE
-  test.strictEqual(doc.documentElement.nodeName, "doc");
+  test.strictEqual(doc.documentElement.getAttribute("foo"), "");
+  test.strictEqual(doc.documentElement.getAttribute(), "");
   test.done();
 }

@@ -463,6 +463,14 @@ Parses a string of XML and returns a `Document`.
 
 The top-level Element from the document.
 
+### Element Instance Methods
+
+#### Element.getAttribute(name)
+
+ * `name`: **String** Attribute name
+
+Return the value of the named attribute. Returns an empty string if the attribute is not set.
+
 ### Node Properties
 
 #### Node.firstChild

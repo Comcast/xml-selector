@@ -34,6 +34,8 @@ void Element::Init(v8::Handle<v8::Object> exports) {
   // inherits from Node
   tpl->Inherit(NanNew(Node::constructor_template));
 
+  NanSetPrototypeTemplate(tpl, "getAttribute", FUNCTION_VALUE(GetAttribute));
+
   // export it
   NanAssignPersistent(constructor, tpl->GetFunction());
   exports->Set(NanNew<v8::String>("Element"), tpl->GetFunction());
@@ -67,6 +69,32 @@ NAN_METHOD(Element::New) {
   obj->Wrap(args.This());
   
   NanReturnThis();
+}
+
+/**
+ * getAttribute(name) - returns String - DOM Level 1
+ */
+NAN_METHOD(Element::GetAttribute) {
+  NanScope();
+  
+  Element* obj = node::ObjectWrap::Unwrap<Element>(args.This());
+  assertGotWrapper(obj);
+  
+  if (!obj->node())
+    NanReturnEmptyString();
+  
+  v8::String::Utf8Value name(args[0]->ToString());
+    
+  xmlChar* value = xmlGetProp(obj->node(), (const xmlChar*)*name);
+  
+  if (!value)
+    NanReturnEmptyString();
+  
+  v8::Local<v8::String> str = NewUtf8Handle((char*)value);
+  
+  xmlFree(value);
+    
+  NanReturnValue(str);
 }
 
 

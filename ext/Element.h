@@ -34,6 +34,7 @@ protected:
   virtual ~Element();
   
   static NAN_METHOD(New);
+  static NAN_METHOD(GetAttribute);
   
   void elem(xmlElementPtr newElem) { node((xmlNodePtr) newElem); }
 
