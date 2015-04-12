@@ -26,6 +26,7 @@
       "sources": [
         "ext/xqjs.cpp",
 #        "ext/xQWrapper.cpp"
+        "ext/CharacterData.cpp",
         "ext/Document.cpp",
         "ext/Element.cpp",
         "ext/Node.cpp"

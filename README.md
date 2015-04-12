@@ -457,6 +457,16 @@ console.log(items[1].text());
 
 Parses a string of XML and returns a `Document`.
 
+### CharacterData Properties
+
+#### CharacterData.data
+
+A String containing the character data content of this Node.
+
+#### CharacterData.length
+
+A Number indicating the length of the `data` property.
+
 ### Document Properties
 
 #### Document.documentElement

@@ -15,6 +15,7 @@
  */
 #include "Node.h"
 #include "Element.h"
+#include "CharacterData.h"
 #include "utils.h"
 
 namespace xmlselector {
@@ -76,6 +77,10 @@ v8::Local<v8::Object> Node::New(xmlNodePtr n) {
   switch (n->type) {
   case XML_ELEMENT_NODE:
     return NanEscapeScope(wrapNode(n, Element::constructor));
+  case XML_TEXT_NODE:
+  case XML_CDATA_SECTION_NODE:
+  case XML_COMMENT_NODE:
+    return NanEscapeScope(wrapNode(n, CharacterData::constructor));
   default:
     return NanEscapeScope(wrapNode(n, Node::constructor));
   }

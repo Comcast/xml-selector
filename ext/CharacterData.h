@@ -13,21 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <node.h>
-#include <libxq.h>
-// #include "xQWrapper.h"
-#include "Document.h"
-#include "Element.h"
-#include "CharacterData.h"
+#ifndef __XMLSELECTOR_CHARACTERDATA_H_INCLUDED__
+#define __XMLSELECTOR_CHARACTERDATA_H_INCLUDED__
 
-using namespace v8;
+#include "Node.h"
 
-void RegisterModule(Handle<Object> target) {
-  //xQWrapper::Init(target);
-  xmlselector::Node::Init(target);
-  xmlselector::Document::Init(target);
-  xmlselector::Element::Init(target);
-  xmlselector::CharacterData::Init(target);
-}
+namespace xmlselector {
 
-NODE_MODULE(xqjs, RegisterModule);
+class CharacterData : public Node {
+public:
+  static void Init(v8::Handle<v8::Object> exports);
+
+  static v8::Persistent<v8::Function> constructor;
+
+protected:
+
+  explicit CharacterData(xmlNodePtr n);
+  virtual ~CharacterData();
+  
+  static NAN_METHOD(New);
+
+  static NAN_PROPERTY_GETTER(Data);
+  static NAN_PROPERTY_GETTER(Length);
+  
+};
+
+} // namespace xmlselector
+
+#endif // __XMLSELECTOR_CHARACTERDATA_H_INCLUDED__
