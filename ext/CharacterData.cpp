@@ -106,9 +106,10 @@ NAN_PROPERTY_GETTER(CharacterData::Length) {
   if (!obj->node())
     NanReturnValue(NanNew<v8::Integer>(0));
   
-  if ( (obj->node()->type == XML_TEXT_NODE) ||
+  if (((obj->node()->type == XML_TEXT_NODE) ||
        (obj->node()->type == XML_CDATA_SECTION_NODE) ||
-       (obj->node()->type == XML_COMMENT_NODE) )
+       (obj->node()->type == XML_COMMENT_NODE)) &&
+       (obj->node()->content) )
          NanReturnValue(NanNew<v8::Integer>(xmlUTF8Strlen(obj->node()->content)));
   
   NanReturnValue(NanNew<v8::Integer>(0));
