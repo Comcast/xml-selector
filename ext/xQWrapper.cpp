@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 #include "xQWrapper.h"
-#include <xml_node.h>
-#include <xml_element.h>
-#include <xml_document.h>
+#include "utils.h"
+#include "Node.h"
 
 static const char* _xqErrors[] = {
   "OK",
@@ -31,23 +30,7 @@ static const char* _xqErrors[] = {
   NULL
 };
 
-#if (NODE_MODULE_VERSION > NODE_0_10_MODULE_VERSION)
-#define ThrowEx(msg) do { NanThrowError(msg); return; } while (0);
-#define ReThrowEx(blk) do { blk.ReThrow(); return; } while (0);
-#else
-#define ThrowEx(msg) NanThrowError(msg)
-#define ReThrow(blk) return blk.ReThrow();
-#endif
-
 #define xQStatusString(code) ((code > 8) ? "Unknown error" : _xqErrors[code])
-
-#define assertPointerValid(ptr) \
-  if (!(ptr)) ThrowEx("Out of memory");
-
-#define assertGotWrapper(ptr) \
-  if (!(ptr)) ThrowEx("xQ function invoked on an invalid instance");
-
-#define assertGotLibxmljs(ptr) assertGotWrapper(ptr)
 
 #define statusToException(code) \
   ThrowEx(xQStatusString(code))
@@ -55,19 +38,6 @@ static const char* _xqErrors[] = {
 #define assertStatusOK(code) \
   if ((code) != XQ_OK) statusToException(code);
 
-#define FUNCTION_VALUE(f) \
-  NanNew<v8::FunctionTemplate>(f)->GetFunction()
-
-// TODO: upgrade NAN
-NAN_INLINE void NanSetPrototypeTemplate(
-    v8::Local<v8::FunctionTemplate> templ
-  , const char *name
-  , v8::Handle<v8::Data> value
-) {
-  NanSetTemplate(templ->PrototypeTemplate(), name, value);
-}
-#define NanReturnThis() NanReturnValue(args.This())
-// end TODO
 
 v8::Persistent<v8::Function> xQWrapper::constructor;
 
@@ -157,10 +127,7 @@ void xQWrapper::shadowNodeList(v8::Local<v8::Object> wrapper) {
   for (int i = 0; i < len; i++) {
     xmlNodePtr node = _xq->context.list[i];
 
-    if (node->type == XML_DOCUMENT_NODE)
-      list->Set(i, libxmljs::XmlDocument::New((xmlDocPtr)node));
-    else
-      list->Set(i, libxmljs::XmlNode::New(node));
+    list->Set(i, xmlselector::Node::New(node));
   }
   
   wrapper->SetHiddenValue(NanNew<v8::String>("_nodes"), list);
@@ -170,34 +137,17 @@ void xQWrapper::shadowNodeList(v8::Local<v8::Object> wrapper) {
  * Utility routine to add a JS object to a node list
  */
 static _NAN_METHOD_RETURN_TYPE addToNodeList(xQ* q, v8::Local<v8::Value> val) {
-  //v8::Local<v8::TypeSwitch> elemType = NanNew<v8::TypeSwitch>(libxmljs::XmlElement::constructor_template);
-  v8::Local<v8::String> elemName = NanNew<v8::String>("Element");
-  v8::Local<v8::String> docName = NanNew<v8::String>("Document");
+  v8::Local<v8::TypeSwitch> nodeType = v8::TypeSwitch::New(NanNew(xmlselector::Node::constructor_template));
   
-  if (val->IsObject()) {
+  if (val->IsObject() && nodeType->match(val)) {
     
     v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(val);
     
-    if (obj->GetConstructorName()->StrictEquals(docName)) {
-      
-      libxmljs::XmlDocument* doc = node::ObjectWrap::Unwrap<libxmljs::XmlDocument>(obj);
-      assertGotLibxmljs(doc);
-      
-      xQStatusCode result = xQNodeList_push(&(q->context), (xmlNodePtr) doc->xml_obj);
-      assertStatusOK(result);
-      
-    } else if (obj->GetConstructorName()->StrictEquals(elemName)) {
-    //} else if (elemType->match(obj)) {
-      
-      libxmljs::XmlNode* elem = node::ObjectWrap::Unwrap<libxmljs::XmlNode>(obj);
-      assertGotLibxmljs(elem);
-      
-      xQStatusCode result = xQNodeList_push(&(q->context), (xmlNodePtr) elem->xml_obj);
-      assertStatusOK(result);
-      
-    } else {
-      ThrowEx("Unsupported item in xQ constructor");
-    }
+    xmlselector::Node* node = node::ObjectWrap::Unwrap<xmlselector::Node>(obj);
+    assertGotWrapper(node);
+    
+    xQStatusCode result = xQNodeList_push(&(q->context), node->node());
+    assertStatusOK(result);
 
   } else {
     ThrowEx("Unsupported item in xQ constructor");

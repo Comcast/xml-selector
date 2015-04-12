@@ -18,7 +18,6 @@
  * Constructor tests
  */
 
-var libxmljs = require('libxmljs');
 var xQ = require('../index');
 
 /**
@@ -106,7 +105,7 @@ module.exports.testInvalidSansNew = function(test) {
  */
 module.exports.testDocument = function(test) {
   var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
-  var doc = libxmljs.parseXmlString(xml);
+  var doc = xQ.parseFromString(xml);
 
   var q = new xQ(doc);
   
@@ -121,7 +120,7 @@ module.exports.testDocument = function(test) {
  */
 module.exports.testDocumentSansNew = function(test) {
   var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
-  var doc = libxmljs.parseXmlString(xml);
+  var doc = xQ.parseFromString(xml);
 
   var q = xQ(doc);
   
@@ -136,13 +135,13 @@ module.exports.testDocumentSansNew = function(test) {
  */
 module.exports.testSingleNode = function(test) {
   var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
-  var doc = libxmljs.parseXmlString(xml);
+  var doc = xQ.parseFromString(xml);
   
-  var q = new xQ(doc.root().child(0));
+  var q = new xQ(doc.documentElement.firstChild);
   
   test.ok(q);
   test.strictEqual(q.find('item').length, 3);
-  test.deepEqual(q.find('item').map(function(n) { return n.text(); }), ["Apple", "Orange", "Banana"]);
+  test.deepEqual(q.find('item').map(function(n) { return xQ(n).text(); }), ["Apple", "Orange", "Banana"]);
 
   test.done();
 }
@@ -152,13 +151,13 @@ module.exports.testSingleNode = function(test) {
  */
 module.exports.testSingleNodeSansNew = function(test) {
   var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
-  var doc = libxmljs.parseXmlString(xml);
+  var doc = xQ.parseFromString(xml);
   
-  var q = xQ(doc.root().child(0));
+  var q = xQ(doc.documentElement.firstChild);
   
   test.ok(q);
   test.strictEqual(q.find('item').length, 3);
-  test.deepEqual(q.find('item').map(function(n) { return n.text(); }), ["Apple", "Orange", "Banana"]);
+  test.deepEqual(q.find('item').map(function(n) { return xQ(n).text(); }), ["Apple", "Orange", "Banana"]);
 
   test.done();
 }
@@ -168,16 +167,16 @@ module.exports.testSingleNodeSansNew = function(test) {
  */
 module.exports.testMultiNode = function(test) {
   var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
-  var doc = libxmljs.parseXmlString(xml);
+  var doc = xQ.parseFromString(xml);
 
-  var a = doc.root().child(0);
-  var b = a.nextSibling();
+  var a = doc.documentElement.firstChild;
+  var b = a.nextSibling;
   var q = new xQ(a, b);
   
   test.ok(q);
   test.strictEqual(q.length, 2);
   test.strictEqual(q.find('item').length, 4);
-  test.deepEqual(q.find('item').map(function(n) { return n.text(); }), ["Apple", "Orange", "Banana", "Salad"]);
+  test.deepEqual(q.find('item').map(function(n) { return xQ(n).text(); }), ["Apple", "Orange", "Banana", "Salad"]);
 
   test.done();
 }
@@ -187,16 +186,16 @@ module.exports.testMultiNode = function(test) {
  */
 module.exports.testMultiNodeSansNew = function(test) {
   var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
-  var doc = libxmljs.parseXmlString(xml);
+  var doc = xQ.parseFromString(xml);
 
-  var a = doc.root().child(0);
-  var b = a.nextSibling();
+  var a = doc.documentElement.firstChild;
+  var b = a.nextSibling;
   var q = xQ(a, b);
   
   test.ok(q);
   test.strictEqual(q.length, 2);
   test.strictEqual(q.find('item').length, 4);
-  test.deepEqual(q.find('item').map(function(n) { return n.text(); }), ["Apple", "Orange", "Banana", "Salad"]);
+  test.deepEqual(q.find('item').map(function(n) { return xQ(n).text(); }), ["Apple", "Orange", "Banana", "Salad"]);
 
   test.done();
 }
@@ -206,16 +205,16 @@ module.exports.testMultiNodeSansNew = function(test) {
  */
 module.exports.testArray = function(test) {
   var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
-  var doc = libxmljs.parseXmlString(xml);
+  var doc = xQ.parseFromString(xml);
 
-  var a = doc.root().child(0);
-  var b = a.nextSibling();
+  var a = doc.documentElement.firstChild;
+  var b = a.nextSibling;
   var q = new xQ([a, b]);
   
   test.ok(q);
   test.strictEqual(q.length, 2);
   test.strictEqual(q.find('item').length, 4);
-  test.deepEqual(q.find('item').map(function(n) { return n.text(); }), ["Apple", "Orange", "Banana", "Salad"]);
+  test.deepEqual(q.find('item').map(function(n) { return xQ(n).text(); }), ["Apple", "Orange", "Banana", "Salad"]);
 
   test.done();
 }
@@ -225,16 +224,16 @@ module.exports.testArray = function(test) {
  */
 module.exports.testArraySansNew = function(test) {
   var xml = "<doc><items><item>Apple</item><item>Orange</item><item>Banana</item></items><more><item>Salad</item></more></doc>";
-  var doc = libxmljs.parseXmlString(xml);
+  var doc = xQ.parseFromString(xml);
 
-  var a = doc.root().child(0);
-  var b = a.nextSibling();
+  var a = doc.documentElement.firstChild;
+  var b = a.nextSibling;
   var q = xQ([a, b]);
   
   test.ok(q);
   test.strictEqual(q.length, 2);
   test.strictEqual(q.find('item').length, 4);
-  test.deepEqual(q.find('item').map(function(n) { return n.text(); }), ["Apple", "Orange", "Banana", "Salad"]);
+  test.deepEqual(q.find('item').map(function(n) { return xQ(n).text(); }), ["Apple", "Orange", "Banana", "Salad"]);
 
   test.done();
 }

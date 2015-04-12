@@ -17,7 +17,7 @@
   "license": "Apache-2.0",
   "author": "Jeffrey Hunter <jeffrey_hunter@cable.comcast.com>",
   "dependencies": {
-    "libxmljs": "0.11.0",
+    "bindings": "1.2.1",
     "nan": "1.7.0"
   },
   "devDependencies": {

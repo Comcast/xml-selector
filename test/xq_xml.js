@@ -37,7 +37,7 @@ module.exports.testEmpty = function(test) {
 module.exports.testSingleElem = function(test) {
   var q = new xQ("<doc>Hello world!</doc>");
 
-  test.strictEqual(q.xml(), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<doc>Hello world!</doc>\n");
+  test.strictEqual(q.xml(), "<?xml version=\"1.0\"?>\n<doc>Hello world!</doc>\n");
   
   test.done();
 }
@@ -48,7 +48,7 @@ module.exports.testSingleElem = function(test) {
 module.exports.testMultiDescendants = function(test) {
   var q = new xQ("<p>The <i>quick</i> <b>brown <i>fox</i></b> jumps...</p>");
 
-  test.strictEqual(q.xml(), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<p>The <i>quick</i> <b>brown <i>fox</i></b> jumps...</p>\n");
+  test.strictEqual(q.xml(), "<?xml version=\"1.0\"?>\n<p>The <i>quick</i> <b>brown <i>fox</i></b> jumps...</p>\n");
   
   test.done();
 }

@@ -25,7 +25,8 @@
       ],
       "direct_dependent_settings": {
         "include_dirs": [
-          "libxml2/include"
+          "libxml2/include",
+          "xmlconfig"
         ]
       },
       "sources": [

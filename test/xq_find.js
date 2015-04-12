@@ -72,9 +72,9 @@ module.exports.testImmediateCombinator = function(test) {
   var all = immediate.find('item');
   var child = immediate.find('doc > item');
   
-  test.deepEqual(all.map(function(n) { return n._attr('value').value(); }), ['Apple', 'Orange', 'Banana']);
+  test.deepEqual(all.map(function(n) { return n.getAttribute('value'); }), ['Apple', 'Orange', 'Banana']);
 
-  test.deepEqual(child.map(function(n) { return n._attr('value').value(); }), ['Apple']);
+  test.deepEqual(child.map(function(n) { return n.getAttribute('value'); }), ['Apple']);
 
   test.done();
 }
@@ -87,7 +87,7 @@ module.exports.testSiblingCombinator = function(test) {
 
   var orange = siblings.find('item[value="Kiwi"] + item');
   
-  test.deepEqual(orange.map(function(n) { return n._attr('value').value(); }), ['Orange']);
+  test.deepEqual(orange.map(function(n) { return n.getAttribute('value'); }), ['Orange']);
   
   test.done();
 }
@@ -98,11 +98,11 @@ module.exports.testSiblingCombinator = function(test) {
 module.exports.testUniversalSelector = function(test) {
   var hello = new xQ("<doc><hello /></doc>");
 
-  test.deepEqual(hello.find('*').map(function(n) { return n.name(); }), ['doc','hello']);
+  test.deepEqual(hello.find('*').map(function(n) { return n.nodeName; }), ['doc','hello']);
   
   var items = new xQ("<doc><items><item>1</item><item>2</item><item>3</item></items></doc>");
   
-  test.deepEqual(items.find('doc *').map(function(n) { return n.name() + ' (' + n.text() + ')'; }),
+  test.deepEqual(items.find('doc *').map(function(n) { return n.nodeName + ' (' + $$(n).text() + ')'; }),
     ['items (123)', 'item (1)', 'item (2)', 'item (3)']);
   
   test.done();
@@ -131,7 +131,7 @@ module.exports.testUnmatchedSelector = function(test) {
 module.exports.testHigherOrderEmpty = function(test) {
 
   test.strictEqual(
-    $$().find(function(n) { return n._attr('value').value() == 'Apple'; }),
+    $$().find(function(n) { return n.getAttribute('value') == 'Apple'; }),
     undefined
   );
 
@@ -149,7 +149,7 @@ module.exports.testHigherOrderMatch = function(test) {
   '</doc>').find('item');
   
   test.strictEqual(
-    $set.find(function(n) { return n._attr('value').value() == 'Orange'; }).text(),
+    $$($set.find(function(n) { return n.getAttribute('value') == 'Orange'; })).text(),
     'Naranja'
   );
 
@@ -167,7 +167,7 @@ module.exports.testHigherOrderNoMatch = function(test) {
   '</doc>').find('item');
   
   test.strictEqual(
-    $set.find(function(n) { return n._attr('value').value() == 'Kumquat'; }),
+    $set.find(function(n) { return n.getAttribute('value') == 'Kumquat'; }),
     undefined
   );
 

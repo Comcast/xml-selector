@@ -36,13 +36,13 @@ module.exports.testSuccess = function(test) {
   var $doc = $$('<doc><item>2</item><item>4</item><item>6</item></doc>').find('item');
   
   test.strictEqual($doc.reduce(function(memo, elem) {
-    return memo + parseInt(elem.text());
+    return memo + parseInt($$(elem).text());
   }, 0), 12);
   
   var $doc = $$('<doc><item>he</item><item>llo</item><item> world</item></doc>').find('item');
   
   test.strictEqual($doc.reduce(function(memo, elem) {
-    return memo + elem.text();
+    return memo + $$(elem).text();
   }, ""), "hello world");
 
   test.done();

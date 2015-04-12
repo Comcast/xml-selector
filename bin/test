@@ -15,4 +15,4 @@
  * limitations under the License.
  */
 var reporter = require('nodeunit').reporters.default;
-reporter.run([__dirname + '/../test/document']);
+reporter.run([__dirname + '/../test', __dirname + '/../test/document']);

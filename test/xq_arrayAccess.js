@@ -33,9 +33,9 @@ module.exports.testIndex = function(test) {
   test.strictEqual(person[10], undefined);
   
   var people = person.find('person');
-  test.strictEqual(people[0]._attr('name').value(), 'Fred');
-  test.strictEqual(people[1]._attr('name').value(), 'Sally');
-  test.strictEqual(people[2]._attr('name').value(), 'Jane');
+  test.strictEqual(people[0].getAttribute('name'), 'Fred');
+  test.strictEqual(people[1].getAttribute('name'), 'Sally');
+  test.strictEqual(people[2].getAttribute('name'), 'Jane');
   test.strictEqual(people[3], undefined);
   
   test.strictEqual(person.find('missing')[0], undefined);
@@ -52,14 +52,14 @@ module.exports.testForEach = function(test) {
   
   var empty = new xQ();
   
-  empty.forEach(function(n, idx) { out.push([n._attr('name').value(), idx]); });
+  empty.forEach(function(n, idx) { out.push([n.getAttribute('name'), idx]); });
   
   test.ok(empty.forEach());
   
   var person = new xQ('<doc><people><person name="Fred" /><person name="Sally" /><person name="Jane" /></people></doc>');
   
   var people = person.find('person');
-  people.forEach(function(n, idx) { out.push([n._attr('name').value(), idx]); });
+  people.forEach(function(n, idx) { out.push([n.getAttribute('name'), idx]); });
   
   test.throws(function() { people.forEach(function() { throw new Error("oops!"); }) });
 
@@ -67,7 +67,7 @@ module.exports.testForEach = function(test) {
   people.forEach(function(n, idx) { test.strictEqual(this, specialThis); }, specialThis);
   
   var missing = person.find('missing');
-  missing.forEach(function(n, idx) { out.push([n._attr('name').value(), idx]); });
+  missing.forEach(function(n, idx) { out.push([n.getAttribute('name'), idx]); });
   
   test.deepEqual(out, [['Fred', 0], ['Sally', 1], ['Jane', 2]]);
   

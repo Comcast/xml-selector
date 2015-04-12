@@ -37,7 +37,7 @@ module.exports.testEmpty = function(test) {
 module.exports.testSingle = function(test) {
   var q = new xQ("<doc>Hello world!</doc>");
 
-  test.strictEqual(q.first().xml(), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<doc>Hello world!</doc>\n");
+  test.strictEqual(q.first().xml(), "<?xml version=\"1.0\"?>\n<doc>Hello world!</doc>\n");
   
   test.done();
 }

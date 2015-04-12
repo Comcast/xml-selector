@@ -71,9 +71,9 @@ module.exports.testImmediateCombinator = function(test) {
   var all = immediate.search('item');
   var child = immediate.search('doc > item');
   
-  test.deepEqual(all.map(function(n) { return n._attr('value').value(); }), ['Apple', 'Orange', 'Banana']);
+  test.deepEqual(all.map(function(n) { return n.getAttribute('value'); }), ['Apple', 'Orange', 'Banana']);
 
-  test.deepEqual(child.map(function(n) { return n._attr('value').value(); }), ['Apple']);
+  test.deepEqual(child.map(function(n) { return n.getAttribute('value'); }), ['Apple']);
 
   test.done();
 }
@@ -86,7 +86,7 @@ module.exports.testSiblingCombinator = function(test) {
 
   var orange = siblings.search('item[value="Kiwi"] + item');
   
-  test.deepEqual(orange.map(function(n) { return n._attr('value').value(); }), ['Orange']);
+  test.deepEqual(orange.map(function(n) { return n.getAttribute('value'); }), ['Orange']);
   
   test.done();
 }
@@ -97,11 +97,11 @@ module.exports.testSiblingCombinator = function(test) {
 module.exports.testUniversalSelector = function(test) {
   var hello = $$("<doc><hello /></doc>");
 
-  test.deepEqual(hello.search('*').map(function(n) { return n.name(); }), ['doc','hello']);
+  test.deepEqual(hello.search('*').map(function(n) { return n.nodeName; }), ['doc','hello']);
   
   var items = $$("<doc><items><item>1</item><item>2</item><item>3</item></items></doc>");
   
-  test.deepEqual(items.search('doc *').map(function(n) { return n.name() + ' (' + n.text() + ')'; }),
+  test.deepEqual(items.search('doc *').map(function(n) { return n.nodeName + ' (' + $$(n).text() + ')'; }),
     ['items (123)', 'item (1)', 'item (2)', 'item (3)']);
   
   test.done();
