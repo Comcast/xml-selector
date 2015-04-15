@@ -23,12 +23,18 @@
 #define ThrowEx(msg) do { NanThrowError(msg); return; } while (0);
 #define ReThrowEx(blk) do { blk.ReThrow(); return; } while (0);
 
+#define NewUtf8Handle(str) \
+  v8::String::NewFromUtf8(VEIGHT_ISOLATE_ARG (str))
+
 #else
 
 #define VEIGHT_ISOLATE_ARG
 
 #define ThrowEx(msg) NanThrowError(msg)
-#define ReThrow(blk) return blk.ReThrow();
+#define ReThrowEx(blk) return blk.ReThrow();
+
+#define NewUtf8Handle(str) \
+  NanNew<v8::String>((str))
 
 #endif
 
@@ -43,8 +49,5 @@
 
 #define FUNCTION_VALUE(f) \
   NanNew<v8::FunctionTemplate>(f)->GetFunction()
-
-#define NewUtf8Handle(str) \
-  v8::String::NewFromUtf8(VEIGHT_ISOLATE_ARG (str))
 
 #endif // __XMLSELECTOR_UTILS_H_INCLUDED__
