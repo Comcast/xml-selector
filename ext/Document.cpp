@@ -160,6 +160,10 @@ NAN_METHOD(Document::ParseFromString) {
   }
   
   v8::Local<v8::Object> retObj = NanNew(constructor)->NewInstance();
+  if (retObj.IsEmpty()) {
+    xmlFreeDoc(doc);
+    NanReturnValue(retObj);
+  }
 
   Document* obj = node::ObjectWrap::Unwrap<Document>(retObj);
   if (!obj) {

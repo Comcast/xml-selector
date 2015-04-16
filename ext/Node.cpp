@@ -91,6 +91,7 @@ v8::Local<v8::Object> Node::New(xmlNodePtr n) {
  */
 v8::Local<v8::Object> Node::wrapNode(xmlNodePtr n, v8::Persistent<v8::Function>& ctor) {
   v8::Local<v8::Object> retObj = NanNew(ctor)->NewInstance();
+  if (retObj.IsEmpty()) return retObj;
 
   Node* obj = node::ObjectWrap::Unwrap<Node>(retObj);
   if (!obj)

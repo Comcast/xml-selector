@@ -90,6 +90,7 @@ void xQWrapper::Init(v8::Handle<v8::Object> exports) {
 v8::Local<v8::Object> xQWrapper::New(xQ* xq) {
   
   v8::Local<v8::Object> retObj = NanNew(constructor)->NewInstance();
+  if (retObj.IsEmpty()) return retObj;
 
   xQWrapper* obj = node::ObjectWrap::Unwrap<xQWrapper>(retObj);
   if (!obj) {
