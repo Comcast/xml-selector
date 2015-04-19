@@ -1,8 +1,11 @@
 {
   "name": "xml-selector",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A jQuery-like interface for working with XML using CSS-style selectors",
   "keywords": [
+    "dom",
+    "libxml",
+    "libxml2",
     "jquery",
     "selector",
     "simple",
@@ -31,6 +34,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com:Comcast/xml-selector.git"
+    "url": "https://github.com/Comcast/xml-selector.git"
   }
 }

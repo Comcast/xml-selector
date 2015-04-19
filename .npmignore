@@ -1,2 +1,5 @@
 bin/test
 test
+deps/libxml2/doc
+deps/libxml2/example
+deps/libxml2/python
