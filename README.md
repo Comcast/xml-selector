@@ -70,7 +70,7 @@ console.log("greeting=%s object=%s",
 ```
 where `$doc` is the document in an XMLSelector instance.
 
-#### But Isn't *This Alternate Solution* Just As Good?
+#### But Isn't *Another Alternate Solution* Just As Good?
 
 To be sure, there are a number of other viable solutions out there for
 easily working with XML, but there are three big advantages that XML
@@ -355,7 +355,7 @@ function isbnPubYear(isbn) {
              .filter(function(elem) { return $$(elem).text() === isbn; })
              .closest('book')
              .find('published')
-             .map(function(elem) { return $$(elem).text(); })[0];
+             .text();
 }
 ```
 
