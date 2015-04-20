@@ -1,4 +1,3 @@
-#!/usr/bin/env node --expose-gc
 /**
  * Copyright 2013-2015 Comcast Cable Communications Management, LLC
  *
@@ -14,5 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var reporter = require('nodeunit').reporters.default;
-reporter.run([__dirname + '/../test', __dirname + '/../test/document']);
+var $$ = require('../../index')
+;
+
+
+/**
+ * documentElement - should return the document element
+ */
+module.exports['documentElement - should return the documentElement'] = function(test) {
+  var doc = $$.parseFromString("<doc></doc>");
+  test.ok(doc.documentElement);
+  test.strictEqual(doc.documentElement.nodeType, 1); // Node.ELEMENT_NODE
+  test.strictEqual(doc.documentElement.nodeName, "doc");
+  test.done();
+}

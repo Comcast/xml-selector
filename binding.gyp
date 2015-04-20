@@ -18,16 +18,19 @@
     {
       "target_name": "xqjs",
       "include_dirs": [
-        "<!(node -e \"console.log(require('path').dirname(require.resolve('libxmljs')))\")",
-        "<!(node -e \"var p = require('path'); console.log(p.join(p.dirname(require.resolve('libxmljs')),'src'))\")",
         "<!(node -e \"require('nan')\")",
         "deps/libxq"
       ],
       "sources": [
-        "ext/xqjs.cpp",
-        "ext/xQWrapper.cpp"
+        "ext/CharacterData.cpp",
+        "ext/Document.cpp",
+        "ext/Element.cpp",
+        "ext/Node.cpp",
+        "ext/xQWrapper.cpp",
+        "ext/xqjs.cpp"
       ],
       "dependencies": [
+        "deps/libxml2.gyp:xml2",
         "deps/libxq/libxq.gyp:xq"
       ]
     }

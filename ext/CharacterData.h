@@ -1,4 +1,3 @@
-#!/usr/bin/env node --expose-gc
 /**
  * Copyright 2013-2015 Comcast Cable Communications Management, LLC
  *
@@ -14,5 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var reporter = require('nodeunit').reporters.default;
-reporter.run([__dirname + '/../test', __dirname + '/../test/document']);
+#ifndef __XMLSELECTOR_CHARACTERDATA_H_INCLUDED__
+#define __XMLSELECTOR_CHARACTERDATA_H_INCLUDED__
+
+#include "Node.h"
+
+namespace xmlselector {
+
+class CharacterData : public Node {
+public:
+  static void Init(v8::Handle<v8::Object> exports);
+
+  static v8::Persistent<v8::Function> constructor;
+
+protected:
+
+  explicit CharacterData(xmlNodePtr n);
+  virtual ~CharacterData();
+  
+  static NAN_METHOD(New);
+
+  static NAN_PROPERTY_GETTER(Data);
+  static NAN_PROPERTY_GETTER(Length);
+  
+};
+
+} // namespace xmlselector
+
+#endif // __XMLSELECTOR_CHARACTERDATA_H_INCLUDED__

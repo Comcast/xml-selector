@@ -1,16 +1,25 @@
 # XML Selector
 
-XML Selector is a utility for working with XML. It provides a jQuery-like
-interface for traversing XML documents using CSS-style selectors.
+XML Selector is a utility for working with XML. It provides partial DOM
+support and a jQuery-like interface for traversing XML documents using
+CSS-style selectors.
+
+Please note that as of version 0.3 XML Selector uses its own DOM
+implementation based on [libxml2](http://xmlsoft.org). This is different
+than the previous non-standard document interface. XML Selector currently
+implements a read-only subset of DOM Level 1. This will be extended in
+the future to meet, at minimum, full Level 1 support.
 
 ## Why Should I Use This Thing?
 
 ### The TL;DR Version
 
-Because you want to write less code and you don't want to hassle with a
-lot of complexity. Plus, we've thought through things like namespaces, so
-it will be possible to do what you need to, no matter how crazy the XML
-you're dealing with is, and the most common cases should just work.
+Because you want a fast, mature XML parser, and you want to write less
+code without hassling with a lot of complexity.
+
+Plus, we've thought through things like namespaces, so it will be
+possible to do what you need to, no matter how crazy the XML you're
+dealing with is, and the most common cases should just work.
 
 ### The Longer Version
 
@@ -61,7 +70,7 @@ console.log("greeting=%s object=%s",
 ```
 where `$doc` is the document in an XMLSelector instance.
 
-#### But Isn't *\<Alternate Solution\>* Just As Good?
+#### But Isn't *Another Alternate Solution* Just As Good?
 
 To be sure, there are a number of other viable solutions out there for
 easily working with XML, but there are three big advantages that XML
@@ -78,7 +87,7 @@ Selector offers:
 
    Some utilities simplify working with XML by converting the document
    into a native data structure (e.g. mapping element names to properties
-   on an object). Unfortunately this tends to involve information loss
+   on an object). Unfortunately, this tends to involve information loss
    since native data structures generally don't have corollaries for both
    named attributes and named child elements. In the case of namespaces,
    ambiguities tend to arise. XML Selector has the advantage of preserving
@@ -97,8 +106,7 @@ Selector offers:
 ## Getting Started
 
 To start using the library, require the module, and create a new instance
-with a string of XML or by giving it any number of nodes from
-[libxmljs](https://github.com/polotek/libxmljs):
+with a string of XML or by giving it any number of nodes:
 
 ```javascript
 var $$ = require('xml-selector');
@@ -113,15 +121,14 @@ var $doc = $$(xmlStr);
 
 // or
 
-var libxmljs = require('libxmljs');
-var doc = libxmljs.parseXml(xmlStr);
-var children = doc.root().childNodes();
+var doc = $$.parseFromString(xmlStr);
+var item = doc.documentElement.firstChild;
 
-var $doc2 = $$(children[0], children[1], children[2]);
+var $doc2 = $$(item, item.nextSibling, item.nextSibling.nextSibling);
 ```
 
 If you're already familiar with jQuery, that may be all you need to get
-started. Feel free to jump ahead to the [Interface](#section_interface)
+started. Feel free to jump ahead to the [API](#section_api)
 to see exactly what's supported.
 
 ### Working With Selectors
@@ -291,10 +298,12 @@ don't have selectors sophisticated enough to match that pattern, but we can
 do something like this:
 
 ```javascript
-$doc.find('spanish').closest('book').find('title').map(function(t) { return t.text(); });
+$doc.find('spanish').closest('book').find('title').map(function(t) { return $$(t).text(); });
 
 // produces: ['Cien años de soledad', 'San Manuel Bueno, mártir']
 ```
+
+### Non-Matching Operations
 
 One of the advantages we gain from building operations around sets is that
 we don't have to introduce a lot of checks and special cases for
@@ -307,7 +316,7 @@ non-matching operations.
 Let's say, for example, we want to find the titles of books in French instead:
 
 ```javascript
-$doc.find('french').closest('book').find('title').map(function(t) { return t.text(); });
+$doc.find('french').closest('book').find('title').map(function(t) { return $$(t).text(); });
 
 // produces: []
 ```
@@ -316,107 +325,473 @@ This works as desired, even though we have three different operations that
 follow a failed match. Again, that works because a non-match produces an
 empty set and not a value like `null`, `false`, or `undefined`.
 
-<a name="section_interface"></a>
-## Interface
+### Higher-Order Functions
 
-Conceptually, the function exported by the module implements this
-interface:
+It's possible to produce even more customized search operations by using
+some of the higher-order functions which allow you to pass in callbacks
+for filtering or finding elements. Continuing with the book example,
+let's say we wanted the titles of the books by Unamuno:
 
 ```javascript
-/** Constructor accepting 0 or more nodes, strings of XML, or combinations thereof */
-var XMLSelector = function(xmlOrNode /*, ... */) {
-}
+$doc.find('author')
+    .filter(function(elem) {
+      return /^de Unamuno,/.test($$(elem).text());
+    })
+    .closest('book')
+    .find('title')
+    .map(function(elem) {
+      return $$(elem).text();
+    });
 
-XMLSelector.prototype = {
-  
-  /** Number of nodes in this instance's list */
-  length: 0,
-  
-  /** Associate a prefix to use in your selectors with a namespace URI */
-  addNamespace: function(prefix, uri) { /* ... */ },
-  
-  /** Return the value of the named attribute from the first node in the list */
-  attr: function(name) { /* ... */ },
-  
-  /** Return a new XMLSelector containing the children of the nodes in this set, optionally filtered by a selector */
-  children: function(optionalSelector) { /* ... */ },
-  
-  /** Return a new XMLSelector with the closest ancestor of each node in the list that matches the supplied selector */
-  closest: function(selector) { /* ... */ },
-  
-  /** Return a new XMLSelector containing the nodes from this set that match the given selector */
-  filter: function(selector) { /* ... */ },
-  
-  /** Search this set for descendants matching a selector and return a new XMLSelector with the result */
-  find: function(selector) { /* ... */ },
-  
-  /** Return a new XMLSelector containing the first node from this set */
-  first: function() { /* ... */ },
-  
-  /** Iterate over the nodes in this instance (behaves like Array.forEach) and returns this */
-  forEach: function(iterator, thisArg) { /* ... */ },
-  
-  /** Return a new XMLSelector containing the last node from this set */
-  last: function() { /* ... */ },
-  
-  /** Iterate over the nodes in this instance and return a new Array containing the returned result of each step */
-  map: function(iterator, thisArg) { /* ... */ },
-  
-  /** Return a new XMLSelector containing the next siblings of the nodes in this set, optionally filtered by a selector */
-  next: function(optionalSelector) { /* ... */ },
-  
-  /** Return a new XMLSelector containing all the next siblings of the nodes in this set, optionally filtered by a selector */
-  nextAll: function(optionalSelector) { /* ... */ },
-
-  /** Return a new XMLSelector containing all the next siblings of the nodes in this set up to siblings matching a selector */
-  nextUntil: function(selector) { /* ... */ },
-
-  /** Return a new XMLSelector containing the nodes in this set not matching a selector */
-  not: function(selector) { /* ... */ },
-
-  /** Return a new XMLSelector containing the parent of the nodes in this set, optionally filtered by a selector */
-  parent: function(optionalSelector) { /* ... */ },
-  
-  /** Return a new XMLSelector containing all the ancestors of the nodes in this set, optionally filtered by a selector */
-  parents: function(optionalSelector) { /* ... */ },
-
-  /** Return a new XMLSelector containing all the ancestors of the nodes in this set up to the ancestor matching a selector */
-  parentsUntil: function(selector) { /* ... */ },
-
-  /** Return a new XMLSelector containing the previous siblings of the nodes in this set, optionally filtered by a selector */
-  prev: function(optionalSelector) { /* ... */ },
-  
-  /** Return a new XMLSelector containing all the previous siblings of the nodes in this set, optionally filtered by a selector */
-  prevAll: function(optionalSelector) { /* ... */ },
-
-  /** Return a new XMLSelector containing all the previous siblings of the nodes in this set up to siblings matching a selector */
-  prevUntil: function(selector) { /* ... */ },
-
-  /** Return the text content of the first element in the list or an empty string */
-  text: function() { /* ... */ },
-  
-  /** Return the xml of the first element in the list or an empty string */
-  xml: function() { /* ... */ }
-  
-};
-
-module.exports = XMLSelector;
+// produces: ['San Manuel Bueno, mártir']
 ```
 
-Additionally, instances of XMLSelector can be accessed by numerical index like an
+Using the same approach you could just as easily create a function to
+return the publication year for an ISBN:
+
+```javascript
+function isbnPubYear(isbn) {
+  return $doc.find(String(isbn).length == 10 ? 'isbn-10' : 'isbn-13')
+             .filter(function(elem) { return $$(elem).text() === isbn; })
+             .closest('book')
+             .find('published')
+             .text();
+}
+```
+
+The functions `filter()` and `find()` both accept callbacks for this
+purpose, and several other functions allow you to iterate over, test, or
+modify the set using callbacks. See the API section, below, for details.
+
+<a name="section_api"></a>
+# API
+
+ * [$$ (XML Selector)](#api_xml_selector)
+ * [CharacterData](#api_character_data)
+ * [Document](#api_document)
+ * [Element](#api_element)
+ * [Node](#api_node)
+
+<a name="api_xml_selector"></a>
+## $$
+
+This is the function exported by the `xml-selector` module. It may be
+invoked directly to obtain a selector instance. It also provides a
+utility function for direct DOM usage.
+
+### [new] $$(xmlString)
+### [new] $$(node1[, ... nodeN])
+### [new] $$(nodeArray)
+
+Accepts an XML String, one or more nodes, an array of nodes, or any
+combination thereof. It returns a new selector instance whose context is
+the provided node list. It may be optionally be called with `new`, but
+that is not required.
+
+### Instance Properties
+
+#### $selector.length
+
+The number of nodes in this instance's list.
+
+### Instance Methods
+
+#### $selector[index]
+
+ * `index`: **Number** Zero-based index
+
+Instances of a selector can be accessed by numerical index like an
 array, so you can do things like this:
 
 ```javascript
 var $$ = require('xml-selector');
 
-var $doc = new $$('<items>' +
-                  '<item>Zero</item>' +
-                  '<item>One</item>' +
-                  '<item>Two</item>' +
-                '</items>');
+var $doc = $$('<items>' +
+                '<item content="Zero" />' +
+                '<item content="One" />' +
+                '<item content="Two" />' +
+              '</items>');
 
-var items = $doc.find('item');
+var $items = $doc.find('item');
 
-console.log(items[1].text());
+console.log($items[1].getAttribute('content'));
 // outputs 'One'
 ```
+
+Array access returns a Node or `undefined`.
+
+#### $selector.addNamespace(prefix, uri)
+
+ * `prefix`: **String** Namespace prefix to use in selector expressions
+ * `uri`: **String** Corresponding namespace URI
+
+Associates a prefix to use in your selectors with a namespace URI.
+Returns this selector instance.
+
+#### $selector.attr(name)
+
+ * `name`: **String** Attribute name
+
+Access the value of the named attribute from the first node in the list.
+Returns a String.
+
+#### $selector.children([selector])
+
+ * `selector`: **String** Optional selector expression
+
+Return a new XML Selector instance containing the children of the nodes
+in this set, optionally filtered by `selector`.
+
+#### $selector.closest(selector)
+
+ * `selector`: **String** Selector expression to match
+
+Return a new XML Selector instance with the closest ancestor of each node
+in the list that matches `selector`.
+
+#### $selector.every(predicate[, thisArg])
+
+ * `predicate`: **Function** Callback function for testing items, takes three arguments:
+   * `item`: **Node** The item to test
+   * `index`: **Number** The index of the item in the list
+   * `$selector`: **XMLSelector** This selector instance
+ * `thisArg`: **Mixed** Optional value to use as `this` when executing callback
+
+Returns `true` if all items in this set pass the given predicate (a
+user-supplied callback which should return a boolean for each item
+supplied).
+
+#### $selector.filter(selector)
+
+ * `selector`: **String** Selector expression
+
+Return a new XML Selector instance containing the nodes from this set
+that match the given selector.
+
+#### $selector.filter(filterFunction[, thisArg])
+
+ * `filterFunction`: **Function** Callback function for filtering items, takes three arguments:
+   * `item`: **Node** The item to test
+   * `index`: **Number** The index of the item in the list
+   * `$selector`: **XMLSelector** This selector instance
+ * `thisArg`: **Mixed** Optional value to use as `this` when executing callback
+
+Return a new XML Selector instance containing only the nodes from this set for which the supplied callback returns `true`.
+
+#### $selector.find(selector)
+
+ * `selector`: **String** Selector expression to search for
+
+Alias of `search`. Searches this set for descendants matching `selector`
+and returns a new XML Selector instance with the result.
+
+#### $selector.find(predicate[, thisArg])
+
+ * `predicate`: **Function** Callback function for testing items, takes three arguments:
+   * `item`: **Node** The item to test
+   * `index`: **Number** The index of the item in the list
+   * `$selector`: **XMLSelector** This selector instance
+ * `thisArg`: **Mixed** Optional value to use as `this` when executing callback
+
+Find the first Node in this selector instance for which the user-supplied
+callback returns `true`. Returns a Node or `undefined`.
+
+#### $selector.findIndex(predicate[, thisArg])
+
+ * `predicate`: **Function** Callback function for testing items, takes three arguments:
+   * `item`: **Node** The item to test
+   * `index`: **Number** The index of the item in the list
+   * `$selector`: **XMLSelector** This selector instance
+ * `thisArg`: **Mixed** Optional value to use as `this` when executing callback
+
+Iterate over the nodes in this selector instance and return the index of
+the first node for which the user-supplied callback returns `true`.
+Returns the numerical index of the matching node, or -1 in the case of no
+match.
+
+#### $selector.first()
+
+Returns a new XML Selector instance containing the first node from this
+set.
+
+#### $selector.forEach(iterator[, thisArg])
+
+ * `iterator`: **Function** Callback function, takes three arguments:
+   * `item`: **Node** The item
+   * `index`: **Number** The index of the item in the list
+   * `$selector`: **XMLSelector** This selector instance
+ * `thisArg`: **Mixed** Optional value to use as `this` when executing callback
+
+Iterate over the nodes in this selector instance (behaves like
+Array.forEach). Returns this selector instance.
+
+#### $selector.last()
+
+Returns a new XML Selector instance containing the last node from this
+set.
+
+#### $selector.map(iterator[, thisArg])
+
+ * `iterator`: **Function** Callback function, takes three arguments:
+   * `item`: **Node** The item to map
+   * `index`: **Number** The index of the item in the list
+   * `$selector`: **XMLSelector** This selector instance
+ * `thisArg`: **Mixed** Optional value to use as `this` when executing callback
+
+Iterates over the nodes in this selector instance and returns a new Array
+containing the values returned by each invocation of `iterator`.
+
+#### $selector.next([selector])
+
+ * `selector`: **String** Optional selector expression
+
+Returns a new XML Selector instance containing the next siblings of the
+nodes in this set, optionally filtered by `selector`.
+
+#### $selector.nextAll([selector])
+
+ * `selector`: **String** Optional selector expression
+
+Returns a new XML Selector instance containing all the next siblings of
+the nodes in this set, optionally filtered by `selector`.
+
+#### $selector.nextUntil(selector)
+
+ * `selector`: **String** Selector expression
+
+Returns a new XML Selector instance containing all the next siblings of
+the nodes in this set up to siblings matching `selector`.
+
+#### $selector.not(selector)
+
+ * `selector`: **String** Selector expression
+
+Returns a new XML Selector instance containing the nodes in this set not
+matching `selector`.
+
+#### $selector.parent([selector])
+
+ * `selector`: **String** Optional selector expression
+
+Returns a new XML Selector instance containing the parent of the nodes in
+this set, optionally filtered by `selector`.
+
+#### $selector.parents([selector])
+
+ * `selector`: **String** Optional selector expression
+
+Returns a new XML Selector instance containing all the ancestors of the
+nodes in this set, optionally filtered by `selector`.
+
+#### $selector.parentsUntil(selector)
+
+ * `selector`: **String** Selector expression
+
+Returns a new XML Selector instance containing all the ancestors of the
+nodes in this set up to the ancestor matching `selector`.
+
+#### $selector.prev([selector])
+
+ * `selector`: **String** Optional selector expression
+
+Returns a new XML Selector instance containing the previous siblings of
+the nodes in this set, optionally filtered by `selector`
+
+#### $selector.prevAll([selector])
+
+ * `selector`: **String** Optional selector expression
+
+Returns a new XML Selector instance containing all the previous siblings
+of the nodes in this set, optionally filtered by `selector`.
+
+#### $selector.prevUntil(selector)
+
+ * `selector`: **String** Selector expression
+
+Returns a new XML Selector instance containing all the previous siblings
+of the nodes in this set up to siblings matching `selector`.
+
+#### $selector.reduce(iterator, initialValue[, thisArg])
+
+ * `iterator`: **Function** Callback function, takes four arguments:
+   * `accumulator`: **Mixed** The value returned by the previous invocation of the callback
+   * `item`: **Node** The current item to process
+   * `index`: **Number** The index of the item in the list
+   * `$selector`: **XMLSelector** This selector instance
+ * `initialValue`: **Mixed** Initial value for `accumulator`
+ * `thisArg`: **Mixed** Optional value to use as `this` when executing callback
+
+Calls a function for each value in the collection (left-to-right) and
+passes the result to the next iteration. Returns the result of the final
+call to `iterator`.
+
+#### $selector.reduceRight(iterator, initialValue[, thisArg])
+
+ * `iterator`: **Function** Callback function, takes four arguments:
+   * `accumulator`: **Mixed** The value returned by the previous invocation of the callback
+   * `item`: **Node** The current item to process
+   * `index`: **Number** The index of the item in the list
+   * `$selector`: **XMLSelector** This selector instance
+ * `initialValue`: **Mixed** Initial value for `accumulator`
+ * `thisArg`: **Mixed** Optional value to use as `this` when executing callback
+
+Calls a function for each value in the collection (right-to-left) and
+passes the result to the next iteration. Returns the result of the final
+call to `iterator`.
+
+#### $selector.search(selector)
+
+ * `selector`: **String** Selector expression
+
+Searches this set for descendants matching `selector` and returns a new
+XML Selector instance with the result.
+
+#### $selector.some(predicate[, thisArg])
+
+ * `predicate`: **Function** Callback function for testing items, takes three arguments:
+   * `item`: **Node** The item to test
+   * `index`: **Number** The index of the item in the list
+   * `$selector`: **XMLSelector** This selector instance
+ * `thisArg`: **Mixed** Optional value to use as `this` when executing callback
+
+Iterates over the Nodes in this selector instance and returns `true` if
+`predicate` returns `true` for at least one of the Nodes. Returns `false`
+otherwise.
+
+#### $selector.text()
+
+Returns a String containing the text content of the first element in the
+list. In the case of an empty set, an empty String is returned.
+
+#### $selector.xml()
+
+Returns a String containing the XML representation of the first element
+in the list. In the case of an empty set, an empty String is returned.
+
+### Utility Functions
+
+#### $$.parseFromString(xmlString)
+
+ * `xmlString`: **String** A string of XML to parse
+
+Parses a string of XML and returns a Document.
+
+<a name="api_character_data">
+## CharacterData
+
+CharacterData extends Node. It does not represent an actual node type,
+but serves as the base class for Text and Comment node types. This
+interface is defined in DOM Level 1. Currently a subset of that interface
+is implemented.
+
+### Instance Properties
+
+#### characterData.data
+
+A String containing the character data content of this Node.
+
+#### characterData.length
+
+A Number indicating the length of the `data` property.
+
+<a name="api_document">
+## Document
+
+Document extends Node. It is the top-level node in a document tree. This
+interface is defined in DOM Level 1. Currently a subset of that interface
+is implemented.
+
+### Instance Properties
+
+#### document.documentElement
+
+The top-level Element from the document.
+
+<a name="api_element">
+## Element
+
+Element extends Node. It represents an XML element in the document. This
+interface is defined in DOM Level 1. Currently a subset of that interface
+is implemented.
+
+### Instance Properties
+
+#### element.tagName
+
+A String containing the name of the element.
+
+### Instance Methods
+
+#### element.getAttribute(name)
+
+ * `name`: **String** Attribute name
+
+Return the value of the named attribute. Returns an empty string if the
+attribute is not set.
+
+<a name="api_node">
+## Node
+
+Node is the base type for all objects in the document tree. This
+interface is defined in DOM Level 1. Currently a subset of that interface
+is implemented.
+
+### Instance Properties
+
+#### node.firstChild
+
+The first child Node of this Node or `null` for none.
+
+#### node.lastChild
+
+The last child Node of this Node or `null` for none.
+
+#### node.nextSibling
+
+The sibling Node immediate following this Node in the document tree. This
+property is `null` in the case of no next sibling.
+
+#### node.nodeName
+
+A String containing the node name as defined in the DOM specification.
+For Elements this is the same as the tag name. For other classes, the
+property value varies according to the node type.
+
+#### node.nodeType
+
+An integer indicating the node type. Values follow the DOM specification:
+
+ * 1 - **Element**
+ * 2 - **Attr**
+ * 3 - **Text**
+ * 4 - **CDATASection**
+ * 5 - **EntityReference**
+ * 6 - **Entity**
+ * 7 - **ProcessingInstruction**
+ * 8 - **Comment**
+ * 9 - **Document**
+ * 10 - **DocumentType**
+ * 11 - **DocumentFragment**
+ * 12 - **Notation**
+
+#### node.ownerDocument
+
+The Document that contains this Node. This property is `null` for the
+Document itself.
+
+#### node.parentNode
+
+The parent Node of this Node. If this Node has no parent, this property
+is `null`. The property will only be `null` for top-level nodes such as
+Documents or DocumentFragments, attribute (Attr) nodes, or detached nodes.
+
+#### node.previousSibling
+
+The sibling Node immediate preceding this Node in the document tree. This
+property is `null` in the case of no previous sibling.
+
+### Instance Methods
+
+#### node.hasChildNodes()
+
+Returns a boolean. Returns `true` if this node has children, `false` otherwise.

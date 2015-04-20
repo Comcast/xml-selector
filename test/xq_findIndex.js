@@ -15,40 +15,44 @@
  */
 
 /**
- * Test first function
+ * Unit tests for the findIndex() method
  */
 
-var xQ = require('../index')
+var $$ = require('../index');
 
 /**
- * Test empty document
+ * Test empty set
  */
 module.exports.testEmpty = function(test) {
-  var empty = new xQ();
-
-  test.strictEqual(empty.first().xml(), "");
+  var $doc = $$();
+  
+  test.strictEqual($doc.findIndex(function() { return true; }), -1);
   
   test.done();
 }
 
 /**
- * Test single node in set
+ * Test no match
  */
-module.exports.testSingle = function(test) {
-  var q = new xQ("<doc>Hello world!</doc>");
-
-  test.strictEqual(q.first().xml(), "<?xml version=\"1.0\"?>\n<doc>Hello world!</doc>\n");
+module.exports.testNoMatch = function(test) {
+  var $doc = $$('<basket><fruit name="apple"/><fruit name="pear"/><fruit name="orange"/></basket>').find('fruit');
+  
+  test.strictEqual($doc.findIndex(function(elem) {
+    return $$(elem).attr('name') == 'banana';
+  }), -1);
   
   test.done();
 }
 
 /**
- * Test multiple nodes in set
+ * Test first match
  */
-module.exports.testMultiple = function(test) {
-  var q = new xQ("<p>The <i>quick</i> <b>brown <i>fox</i></b> jumps...</p>");
-
-  test.strictEqual(q.find('i').first().xml(), "<i>quick</i>");
+module.exports.testFirstMatch = function(test) {
+  var $doc = $$('<basket><fruit name="apple"/><fruit name="pear"/><fruit name="orange"/></basket>').find('fruit');
+  
+  test.strictEqual($doc.findIndex(function(elem) {
+    return $$(elem).attr('name') == 'pear';
+  }), 1);
   
   test.done();
 }

@@ -16,11 +16,18 @@
 #include <node.h>
 #include <libxq.h>
 #include "xQWrapper.h"
+#include "Document.h"
+#include "Element.h"
+#include "CharacterData.h"
 
 using namespace v8;
 
 void RegisterModule(Handle<Object> target) {
   xQWrapper::Init(target);
+  xmlselector::Node::Init(target);
+  xmlselector::Document::Init(target);
+  xmlselector::Element::Init(target);
+  xmlselector::CharacterData::Init(target);
 }
 
 NODE_MODULE(xqjs, RegisterModule);

@@ -1,4 +1,3 @@
-#!/usr/bin/env node --expose-gc
 /**
  * Copyright 2013-2015 Comcast Cable Communications Management, LLC
  *
@@ -14,5 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var reporter = require('nodeunit').reporters.default;
-reporter.run([__dirname + '/../test', __dirname + '/../test/document']);
+var $$ = require('../../index')
+;
+
+
+/**
+ * garbage collector - should not produce errors
+ */
+module.exports['garbage collector - should not produce errors'] = function(test) {
+
+  try {
+    global.gc();
+  } catch (e) {
+    console.error("\u001B[31m" + "* skipping garbage collection; use --expose-gc to enable" + "\u001B[39m");
+  }
+  
+  test.done();
+}

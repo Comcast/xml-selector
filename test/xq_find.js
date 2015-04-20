@@ -19,6 +19,7 @@
  */
 
 var xQ = require('../index');
+var $$ = xQ;
 
 /**
  * Test simple selector
@@ -71,9 +72,9 @@ module.exports.testImmediateCombinator = function(test) {
   var all = immediate.find('item');
   var child = immediate.find('doc > item');
   
-  test.deepEqual(all.map(function(n) { return n._attr('value').value(); }), ['Apple', 'Orange', 'Banana']);
+  test.deepEqual(all.map(function(n) { return n.getAttribute('value'); }), ['Apple', 'Orange', 'Banana']);
 
-  test.deepEqual(child.map(function(n) { return n._attr('value').value(); }), ['Apple']);
+  test.deepEqual(child.map(function(n) { return n.getAttribute('value'); }), ['Apple']);
 
   test.done();
 }
@@ -86,7 +87,7 @@ module.exports.testSiblingCombinator = function(test) {
 
   var orange = siblings.find('item[value="Kiwi"] + item');
   
-  test.deepEqual(orange.map(function(n) { return n._attr('value').value(); }), ['Orange']);
+  test.deepEqual(orange.map(function(n) { return n.getAttribute('value'); }), ['Orange']);
   
   test.done();
 }
@@ -97,11 +98,11 @@ module.exports.testSiblingCombinator = function(test) {
 module.exports.testUniversalSelector = function(test) {
   var hello = new xQ("<doc><hello /></doc>");
 
-  test.deepEqual(hello.find('*').map(function(n) { return n.name(); }), ['doc','hello']);
+  test.deepEqual(hello.find('*').map(function(n) { return n.nodeName; }), ['doc','hello']);
   
   var items = new xQ("<doc><items><item>1</item><item>2</item><item>3</item></items></doc>");
   
-  test.deepEqual(items.find('doc *').map(function(n) { return n.name() + ' (' + n.text() + ')'; }),
+  test.deepEqual(items.find('doc *').map(function(n) { return n.nodeName + ' (' + $$(n).text() + ')'; }),
     ['items (123)', 'item (1)', 'item (2)', 'item (3)']);
   
   test.done();
@@ -121,5 +122,77 @@ module.exports.testUnmatchedSelector = function(test) {
   test.strictEqual(hello.find('+ hi').length, 0);
   test.strictEqual(hello.find('doc hello *').length, 0);
   
+  test.done();
+}
+
+/**
+ * Test higher-order match
+ */
+module.exports.testHigherOrderEmpty = function(test) {
+
+  test.strictEqual(
+    $$().find(function(n) { return n.getAttribute('value') == 'Apple'; }),
+    undefined
+  );
+
+  test.done();
+}
+
+/**
+ * Test higher-order match
+ */
+module.exports.testHigherOrderMatch = function(test) {
+  var $set = $$('<doc>' +
+    '<item value="Apple">Manzana</item>' +
+    '<item value="Orange">Naranja</item>' +
+    '<item value="Banana">Plátano</item>' +
+  '</doc>').find('item');
+  
+  test.strictEqual(
+    $$($set.find(function(n) { return n.getAttribute('value') == 'Orange'; })).text(),
+    'Naranja'
+  );
+
+  test.done();
+}
+
+/**
+ * Test higher-order match
+ */
+module.exports.testHigherOrderNoMatch = function(test) {
+  var $set = $$('<doc>' +
+    '<item value="Apple">Manzana</item>' +
+    '<item value="Orange">Naranja</item>' +
+    '<item value="Banana">Plátano</item>' +
+  '</doc>').find('item');
+  
+  test.strictEqual(
+    $set.find(function(n) { return n.getAttribute('value') == 'Kumquat'; }),
+    undefined
+  );
+
+  test.done();
+}
+
+/**
+ * Test higher-order match
+ */
+module.exports.testHigherOrderContext = function(test) {
+  var out = [];
+  var ctx = {"context": 1};
+  
+  var $set = $$('<doc>' +
+    '<item value="Apple">Manzana</item>' +
+    '<item value="Orange">Naranja</item>' +
+    '<item value="Banana">Plátano</item>' +
+  '</doc>').find('item');
+  
+  test.strictEqual(
+    $set.find(function(n) { out.push(this); return false; }, ctx),
+    undefined
+  );
+  
+  test.deepEqual(out, [ctx, ctx, ctx]);
+
   test.done();
 }
